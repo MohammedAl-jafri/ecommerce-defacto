@@ -1,0 +1,5 @@
+[
+  {"id":1, "title":"Basic T-Shirt", "category":"tshirt", "price":199.9, "image":"https://images.unsplash.com/photo-1520975682031-a6a6944aaf72?q=80&w=1200&auto=format&fit=crop"},
+  {"id":2, "title":"Blue Jeans", "category":"jeans", "price":549.0, "image":"https://images.unsplash.com/photo-1483985977866-3e4e54a4b7f9?q=80&w=1200&auto=format&fit=crop"},
+  {"id":3, "title":"White Sneakers", "category":"shoes", "price":899.0, "image":"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop"}
+]
