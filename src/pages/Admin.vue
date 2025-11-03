@@ -111,9 +111,7 @@ const addProduct = async () => {
       <label>
         Ürün Adı
         <input v-model="title" placeholder="Örn: Basic T-Shirt" class="btn" style="width:100%" />
-...
 <input v-model="price" type="number" min="0" step="0.01" class="btn" style="width:100%" />
-...
 <input v-model="image" placeholder="https://..." class="btn" style="width:100%" />
 <textarea v-model="desc" rows="3" class="btn" style="width:100%"></textarea>
 
