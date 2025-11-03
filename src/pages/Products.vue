@@ -2,6 +2,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '../components/ProductCard.vue'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
+
 
 const route = useRoute()
 const router = useRouter()
@@ -22,9 +25,15 @@ watch(() => route.query, (nv) => {
 })
 
 onMounted(async () => {
-  const res = await fetch('/src/assets/mock-products.json')
-  all.value = await res.json()
+  // get all documents from "products" collection
+  const snapshot = await getDocs(collection(db, 'products'))
+  // convert docs to array
+  all.value = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }))
 })
+
 
 const filtered = computed(() => {
   let items = all.value
