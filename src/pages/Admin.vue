@@ -101,14 +101,16 @@ onMounted(loadProducts)
 
 <template>
   <section
-    style="max-width: 650px; margin: 0 auto; display: grid; gap: 16px; padding: 16px 0;"
-  >
+  style="max-width: 650px; margin: 0 auto; display: grid; gap: 16px; padding: 24px 12px; background:#f5f5f5;"
+  > 
+
     <h1>Admin • Ürün Ekle</h1>
 
     <!-- FORM CARD -->
     <div
-      style="background:white;padding:16px;border-radius:12px;display:grid;gap:12px;border:1px solid #eee"
+  style="background:white;padding:18px 16px;border-radius:14px;display:grid;gap:14px;border:1px solid #e5e7eb;box-shadow:0 4px 18px rgba(0,0,0,0.03)"
     >
+
       <!-- Ürün adı -->
       <label>
         Ürün Adı
@@ -186,8 +188,9 @@ onMounted(loadProducts)
         <div
           v-for="p in products"
           :key="p.id"
-          style="background:white;border:1px solid #ddd;padding:10px 12px;border-radius:10px;min-width:160px;display:grid;gap:6px"
+          style="background:white;border:1px solid #e5e7eb;padding:10px 12px;border-radius:12px;min-width:180px;display:grid;gap:6px"
         >
+
           <strong>{{ p.title || p.name }}</strong>
           <div style="font-size:12px;color:#666">{{ p.category }}</div>
           <div style="font-weight:bold">{{ p.price }} ₺</div>
