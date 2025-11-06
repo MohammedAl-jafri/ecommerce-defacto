@@ -8,17 +8,39 @@ const props = defineProps({
   },
 })
 
-// Emits event to parent for "Detay" click
+// we still emit detail so parent pages can open /product/:id
 const emit = defineEmits(['detail'])
 
-// fallback image (used if Firestore has empty or bad URL)
 const fallback = 'https://via.placeholder.com/400x300.png?text=No+image'
 
 // normalize fields
 const title = computed(() => props.item.title || props.item.name || 'Ürün')
 const category = computed(() => props.item.category || '')
 const price = computed(() => props.item.price ?? 0)
-const image = computed(() => props.item.image || fallback)
+
+// fix: some Firestore docs have empty string for image → use fallback
+const image = computed(() => {
+  const src = props.item.image
+  if (!src || String(src).trim() === '') {
+    return fallback
+  }
+  return src
+})
+
+// simple localStorage cart
+const addToCart = () => {
+  const key = 'cart'
+  const current = JSON.parse(localStorage.getItem(key) || '[]')
+  current.push({
+    id: props.item.id,
+    title: title.value,
+    price: price.value,
+    category: category.value,
+    image: image.value,
+  })
+  localStorage.setItem(key, JSON.stringify(current))
+  console.log('added to cart:', title.value)
+}
 </script>
 
 <template>
@@ -32,9 +54,8 @@ const image = computed(() => props.item.image || fallback)
     <p class="price">{{ price }} ₺</p>
 
     <div class="actions">
-      <!-- when clicked, emit to parent -->
       <button class="btn-secondary" @click="$emit('detail', item)">Detay</button>
-      <button class="btn-primary">Sepete Ekle</button>
+      <button class="btn-primary" @click="addToCart">Sepete Ekle</button>
     </div>
   </article>
 </template>

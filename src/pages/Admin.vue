@@ -66,7 +66,6 @@ const addProduct = async () => {
   message.value = ''
 
   const payload = {
-    // save both so other pages can use either
     name: title.value,
     title: title.value,
     price: Number(price.value),
@@ -243,6 +242,20 @@ onMounted(loadProducts)
 </template>
 
 <style scoped>
+/* override global .btn from App.vue only on this page */
+.btn {
+  background: #fff;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.btn:focus {
+  outline: none;
+  border-color: #ff8400;
+}
+
 .admin-list {
   display: flex;
   flex-wrap: wrap;
