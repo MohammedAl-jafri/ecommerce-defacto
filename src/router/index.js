@@ -5,6 +5,9 @@ import ProductDetail from '../pages/ProductDetail.vue'
 import Cart from '../pages/Cart.vue'
 import Login from '../pages/Login.vue'
 import Admin from '../pages/Admin.vue'
+import Register from '../pages/Register.vue'
+import Checkout from '../pages/Checkout.vue'
+import Profile from '../pages/Profile.vue'
 
 const routes = [
   { path: '/', name: 'home', component: Home },
@@ -12,13 +15,18 @@ const routes = [
   { path: '/product/:id', name: 'product', component: ProductDetail, props: true },
   { path: '/cart', name: 'cart', component: Cart },
   { path: '/login', name: 'login', component: Login },
+  { path: '/register', name: 'register', component: Register },
+  { path: '/checkout', name: 'checkout', component: Checkout },
+  { path: '/profile', name: 'profile', component: Profile },
   { path: '/admin', name: 'admin', component: Admin },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() { return { top: 0 } }
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 export default router
