@@ -14,6 +14,9 @@
           />
           <RouterLink to="/cart" class="btn">Sepet</RouterLink>
           <RouterLink to="/login" class="btn">Giriş</RouterLink>
+          <RouterLink to="/register" class="btn">Kayıt</RouterLink>
+          <RouterLink to="/profile" class="btn">Profil</RouterLink>
+
         </div>
       </div>
       <nav class="tabs">
