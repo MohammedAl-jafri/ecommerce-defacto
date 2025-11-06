@@ -65,12 +65,15 @@ const addProduct = async () => {
   loading.value = true
   message.value = ''
 
+  // ✅ Clean image before saving (fixes “image: https://...” problem)
+  const cleanImage = image.value.trim().replace(/^image:\s*/i, '')
+
   const payload = {
     name: title.value,
     title: title.value,
     price: Number(price.value),
     category: category.value,
-    image: image.value,
+    image: cleanImage,
     description: desc.value,
   }
 
@@ -184,7 +187,7 @@ onMounted(loadProducts)
       <div v-if="image" style="margin-top: 4px">
         <p style="font-size: 12px; color: #666">Önizleme:</p>
         <img
-          :src="image"
+          :src="image.trim().replace(/^image:\\s*/i, '')"
           alt="preview"
           style="max-width: 180px; border-radius: 8px; border: 1px solid #eee"
         />
@@ -222,7 +225,12 @@ onMounted(loadProducts)
       <div class="admin-list">
         <div v-for="p in products" :key="p.id" class="admin-card">
           <div class="admin-card-top">
-            <img v-if="p.image" :src="p.image" alt="" class="thumb" />
+            <img
+              v-if="p.image"
+              :src="String(p.image).trim().replace(/^image:\\s*/i, '')"
+              alt=""
+              class="thumb"
+            />
             <div>
               <strong>{{ p.title || p.name }}</strong>
               <div class="muted">{{ p.category || '—' }}</div>
@@ -242,7 +250,6 @@ onMounted(loadProducts)
 </template>
 
 <style scoped>
-/* override global .btn from App.vue only on this page */
 .btn {
   background: #fff;
   color: #111;
