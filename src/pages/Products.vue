@@ -110,3 +110,22 @@ const filtered = computed(() => {
     </div>
   </section>
 </template>
+<style scoped>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.top-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.top-filters > * {
+  min-height: 34px;
+}
+</style>

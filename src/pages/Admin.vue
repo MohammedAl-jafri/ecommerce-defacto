@@ -182,35 +182,95 @@ onMounted(loadProducts)
     </div>
 
     <!-- LIST -->
-    <div>
-      <h2>Mevcut Ürünler (Firestore’dan)</h2>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        <div
-          v-for="p in products"
-          :key="p.id"
-          style="background:white;border:1px solid #e5e7eb;padding:10px 12px;border-radius:12px;min-width:180px;display:grid;gap:6px"
-        >
+<div>
+  <h2>Mevcut Ürünler (Firestore’dan)</h2>
 
+  <div class="admin-list">
+    <div v-for="p in products" :key="p.id" class="admin-card">
+      <div class="admin-card-top">
+        <img v-if="p.image" :src="p.image" alt="" class="thumb" />
+        <div>
           <strong>{{ p.title || p.name }}</strong>
-          <div style="font-size:12px;color:#666">{{ p.category }}</div>
-          <div style="font-weight:bold">{{ p.price }} ₺</div>
-
-          <div style="display:flex;gap:6px">
-            <button
-              @click="startEdit(p)"
-              style="flex:1;background:#e5f1ff;border:none;border-radius:6px;padding:4px 0;font-size:12px;cursor:pointer"
-            >
-              Edit
-            </button>
-            <button
-              @click="deleteProduct(p.id)"
-              style="flex:1;background:#ffe5e5;border:none;border-radius:6px;padding:4px 0;font-size:12px;cursor:pointer"
-            >
-              Delete
-            </button>
-          </div>
+          <div class="muted">{{ p.category || '—' }}</div>
         </div>
       </div>
+
+      <div class="price-line">{{ p.price }} ₺</div>
+
+      <div class="actions">
+        <button @click="() => startEdit(p)" class="btn-edit">Edit</button>
+        <button @click="deleteProduct(p.id)" class="btn-del">Delete</button>
+      </div>
     </div>
+  </div>
+</div>
   </section>
 </template>
+<style scoped>
+.admin-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.admin-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: 180px;
+  display: grid;
+  gap: 6px;
+}
+
+.admin-card-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+
+.muted {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.price-line {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit,
+.btn-del {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #e0ecff;
+  color: #1e293b;
+}
+
+.btn-del {
+  background: #ffe4e6;
+  color: #b91c1c;
+}
+</style>

@@ -1,24 +1,55 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../firebase'
 import ProductCard from '../components/ProductCard.vue'
 
-const picks = ref([])
+const featured = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
-  const res = await fetch('/src/assets/mock-products.json')
-  const all = await res.json()
-  picks.value = all.slice(0, 8)
+  try {
+    const snap = await getDocs(collection(db, 'products'))
+    const arr = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }))
+    // show first 3
+    featured.value = arr.slice(0, 3)
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
 <template>
-  <section style="display:grid;gap:18px">
-    <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:18px">
-      <h2>Öne Çıkanlar</h2>
-      <p class="muted">Basit bir e-ticaret şablonu. Arama, grid, detay ve sepet sayfaları hazır.</p>
+  <section class="home-block">
+    <h2>Öne Çıkanlar</h2>
+    <p>Basit bir e-ticaret şablonu. Arama, grid, detay ve sepet sayfaları hazır.</p>
+
+    <div v-if="!loading" class="grid">
+      <ProductCard
+        v-for="p in featured"
+        :key="p.id"
+        :item="p"
+      />
     </div>
-    <div class="grid">
-      <ProductCard v-for="p in picks" :key="p.id" :item="p" />
-    </div>
+
+    <p v-else>Ürünler yükleniyor…</p>
   </section>
 </template>
+
+<style scoped>
+.home-block {
+  background: #f8fafc00;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+</style>
