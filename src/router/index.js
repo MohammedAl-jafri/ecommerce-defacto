@@ -9,7 +9,7 @@ import Admin from '../pages/Admin.vue'
 const routes = [
   { path: '/', name: 'home', component: Home },
   { path: '/products', name: 'products', component: Products },
-  { path: '/products/:id', name: 'product', component: ProductDetail, props: true },
+  { path: '/product/:id', name: 'product', component: ProductDetail, props: true },
   { path: '/cart', name: 'cart', component: Cart },
   { path: '/login', name: 'login', component: Login },
   { path: '/admin', name: 'admin', component: Admin },

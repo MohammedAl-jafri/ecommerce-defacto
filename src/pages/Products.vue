@@ -16,6 +16,11 @@ const q = ref(route.query.q || '')
 const cat = ref(route.query.cat || '')
 const sort = ref(route.query.sort || '')
 
+// navigate to detail
+const goToDetail = (product) => {
+  router.push(`/product/${product.id}`)
+}
+
 // sync URL with filters
 const applyQueryToUrl = () => {
   router.replace({
@@ -51,7 +56,7 @@ onMounted(async () => {
       title: data.title || data.name || 'Ürün',
       price: data.price || 0,
       category: data.category || '',
-      image: data.image || '', // optional
+      image: data.image || '',
       ...data
     }
   })
@@ -92,10 +97,10 @@ const filtered = computed(() => {
       <select v-model="cat" class="btn" style="min-width:140px">
         <option value="">Kategori: Hepsi</option>
         <!-- make sure these match Firestore categories -->
-        <option value="clothing">Clothing</option>
         <option value="tshirt">Tişört</option>
         <option value="jeans">Jean</option>
         <option value="shoes">Ayakkabı</option>
+        <option value="clothing">Clothing</option>
       </select>
 
       <select v-model="sort" class="btn" style="min-width:160px">
@@ -106,10 +111,16 @@ const filtered = computed(() => {
     </div>
 
     <div class="grid">
-      <ProductCard v-for="p in filtered" :key="p.id" :item="p" />
+      <ProductCard
+        v-for="p in filtered"
+        :key="p.id"
+        :item="p"
+        @detail="goToDetail"
+      />
     </div>
   </section>
 </template>
+
 <style scoped>
 .grid {
   display: grid;

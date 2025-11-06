@@ -1,11 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import ProductCard from '../components/ProductCard.vue'
 
 const featured = ref([])
 const loading = ref(true)
+const router = useRouter()
+
+const goToDetail = (product) => {
+  router.push(`/product/${product.id}`)
+}
 
 onMounted(async () => {
   try {
@@ -34,6 +40,7 @@ onMounted(async () => {
         v-for="p in featured"
         :key="p.id"
         :item="p"
+        @detail="goToDetail"
       />
     </div>
 

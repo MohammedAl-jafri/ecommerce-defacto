@@ -8,9 +8,11 @@ const props = defineProps({
   },
 })
 
+// Emits event to parent for "Detay" click
+const emit = defineEmits(['detail'])
+
 // fallback image (used if Firestore has empty or bad URL)
-const fallback =
-  'https://via.placeholder.com/400x300.png?text=No+image'
+const fallback = 'https://via.placeholder.com/400x300.png?text=No+image'
 
 // normalize fields
 const title = computed(() => props.item.title || props.item.name || 'Ürün')
@@ -30,7 +32,8 @@ const image = computed(() => props.item.image || fallback)
     <p class="price">{{ price }} ₺</p>
 
     <div class="actions">
-      <button class="btn-secondary">Detay</button>
+      <!-- when clicked, emit to parent -->
+      <button class="btn-secondary" @click="$emit('detail', item)">Detay</button>
       <button class="btn-primary">Sepete Ekle</button>
     </div>
   </article>
