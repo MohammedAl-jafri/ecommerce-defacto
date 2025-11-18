@@ -1,5 +1,7 @@
-import { initializeApp } from "firebase/app"
-import { getFirestore } from "firebase/firestore"
+// src/firebase.js
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB3gW3B2TYPAv54MWg1S80WZwyndAEPug",
@@ -8,7 +10,11 @@ const firebaseConfig = {
   storageBucket: "defacto-ecommerce.appspot.com",
   messagingSenderId: "862659967617",
   appId: "1:862659967617:web:1ce196467ab89df046b80e"
-}
+};
 
-const app = initializeApp(firebaseConfig)
-export const db = getFirestore(app)
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+export { db, auth };
