@@ -1,4 +1,32 @@
 <script setup>
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+// router tools
+const router = useRouter()
+const route = useRoute()
+
+// search field state
+const search = ref(route.query.q || '')
+
+// update input when URL query changes
+watch(
+  () => route.query.q,
+  (nv) => {
+    search.value = nv || ''
+  }
+)
+
+// when user presses Enter
+const doSearch = () => {
+  router.push({
+    name: 'products',
+    query: {
+      q: search.value || undefined,
+      cat: route.query.cat || undefined,
+    },
+  })
+}
 </script>
 
 <template>
@@ -6,19 +34,22 @@
     <div class="container">
       <div class="row">
         <RouterLink to="/" class="brand">ShopVue</RouterLink>
+
         <div class="grow search">
           <input
+            v-model="search"
             placeholder="Ara • ürün adı…"
-            @keyup.enter="$router.push({ name: 'products', query: { q: $event.target.value } })"
             aria-label="Ürün ara"
+            @keyup.enter="doSearch"
           />
+
           <RouterLink to="/cart" class="btn">Sepet</RouterLink>
           <RouterLink to="/login" class="btn">Giriş</RouterLink>
           <RouterLink to="/register" class="btn">Kayıt</RouterLink>
           <RouterLink to="/profile" class="btn">Profil</RouterLink>
-
         </div>
       </div>
+
       <nav class="tabs">
         <RouterLink to="/products?cat=tshirt">Tişört</RouterLink>
         <RouterLink to="/products?cat=jeans">Jean</RouterLink>
