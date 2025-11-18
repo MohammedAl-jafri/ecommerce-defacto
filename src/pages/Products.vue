@@ -56,7 +56,11 @@ onMounted(async () => {
       title: data.title || data.name || 'Ürün',
       price: data.price || 0,
       category: data.category || '',
-      image: data.image || '',
+      // ✅ clean image (trim + remove "image:" prefix if it exists)
+      image: (data.image || '')
+        .toString()
+        .trim()
+        .replace(/^image:\s*/i, ''),
       ...data
     }
   })
