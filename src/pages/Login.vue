@@ -1,44 +1,51 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../firebase'
+
+const router = useRouter()
 
 const email = ref('')
 const password = ref('')
-const message = ref('')
+const loading = ref(false)
+const error = ref('')
 
-const login = () => {
-  // Part-3: burada Firebase Auth çağrısı yapılacak
+const handleLogin = async () => {
+  error.value = ''
   if (!email.value || !password.value) {
-    message.value = 'E-posta ve şifre gerekli.'
+    error.value = 'E-posta ve şifre zorunlu.'
     return
   }
-  message.value = 'Demo mod: Giriş işlemi burada olacak.'
+
+  loading.value = true
+  try {
+    await signInWithEmailAndPassword(auth, email.value, password.value)
+    await router.push({ name: 'profile' })
+  } catch (err) {
+    console.error(err)
+    error.value = 'Giriş başarısız: ' + err.message
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-  <section style="max-width:420px;margin:0 auto">
+  <section class="auth-wrapper">
     <h2>Giriş</h2>
-    <p class="muted">Part-1/2: sadece arayüz. Part-3'te gerçek Firebase Auth eklenecek.</p>
+    <p class="muted">
+      Firebase Auth ile e-posta/şifre girişi.
+    </p>
 
-    <div
-      style="
-        background:white;
-        margin-top:16px;
-        padding:16px;
-        border-radius:12px;
-        border:1px solid #e5e7eb;
-        display:grid;
-        gap:12px;
-      "
-    >
+    <form class="card" @submit.prevent="handleLogin">
       <label>
         E-posta
         <input
           v-model="email"
           type="email"
-          placeholder="ornek@mail.com"
           class="btn"
-          style="width:100%"
+          placeholder="ornek@mail.com"
         />
       </label>
 
@@ -48,28 +55,56 @@ const login = () => {
           v-model="password"
           type="password"
           class="btn"
-          style="width:100%"
+          placeholder="••••••••"
         />
       </label>
 
-      <button
-        @click="login"
-        style="background:#0f172a;color:white;border:none;padding:8px 0;border-radius:8px;cursor:pointer"
-      >
-        Giriş Yap
+      <button type="submit" :disabled="loading" class="primary">
+        {{ loading ? 'Giriş yapılıyor…' : 'Giriş Yap' }}
       </button>
 
-      <p v-if="message" class="muted">{{ message }}</p>
-
-      <p class="muted" style="font-size:12px">
-        İpucu: Admin sayfasını korumak için buraya Firebase Auth bağlanacak.
-      </p>
-    </div>
+      <p v-if="error" class="error">{{ error }}</p>
+    </form>
   </section>
 </template>
 
 <style scoped>
+.auth-wrapper {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 32px 12px;
+  display: grid;
+  gap: 16px;
+}
+.card {
+  background: #fff;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  display: grid;
+  gap: 12px;
+}
+.btn {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 8px;
+}
+.primary {
+  background: #ff8400;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.error {
+  color: #b91c1c;
+  font-size: 13px;
+}
 .muted {
   color: #94a3b8;
+  font-size: 14px;
 }
 </style>

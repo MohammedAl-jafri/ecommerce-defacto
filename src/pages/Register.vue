@@ -1,66 +1,128 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { auth } from '../firebase'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import useAuth from '../stores/useAuth'
 
-const name = ref('')
+const router = useRouter()
+const { user } = useAuth()
+
 const email = ref('')
 const password = ref('')
-const message = ref('')
+const displayName = ref('')
+const loading = ref(false)
+const error = ref('')
 
-const register = () => {
-  if (!name.value || !email.value || !password.value) {
-    message.value = 'Tüm alanlar zorunlu.'
+const handleRegister = async () => {
+  error.value = ''
+  if (!email.value || !password.value) {
+    error.value = 'E-posta ve şifre zorunlu.'
     return
   }
-  // Part-3: burada Firebase Auth (createUserWithEmailAndPassword) gelecek
-  message.value = 'Demo mod: Kayıt burada yapılacak.'
+
+  loading.value = true
+  try {
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    )
+
+    if (displayName.value) {
+      await updateProfile(cred.user, { displayName: displayName.value })
+    }
+
+    // after register → go profile
+    await router.push({ name: 'profile' })
+  } catch (err) {
+    console.error(err)
+    error.value = err.message
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
-  <section style="max-width:420px;margin:0 auto">
+  <section class="auth-wrapper">
     <h2>Kayıt Ol</h2>
-    <p class="muted">Bu sayfa vize sonrası Firebase Auth ile bağlanacak.</p>
+    <p class="muted">
+      Part-3: Firebase Authentication ile gerçek kullanıcı kaydı.
+    </p>
 
-    <div
-      style="
-        background:white;
-        margin-top:16px;
-        padding:16px;
-        border-radius:12px;
-        border:1px solid #e5e7eb;
-        display:grid;
-        gap:12px;
-      "
-    >
+    <form class="card" @submit.prevent="handleRegister">
       <label>
-        Ad Soyad
-        <input v-model="name" class="btn" style="width:100%" placeholder="Adınız" />
+        İsim
+        <input v-model="displayName" class="btn" placeholder="Adınız" />
       </label>
 
       <label>
         E-posta
-        <input v-model="email" type="email" class="btn" style="width:100%" placeholder="mail@ornek.com" />
+        <input
+          v-model="email"
+          type="email"
+          class="btn"
+          placeholder="ornek@mail.com"
+        />
       </label>
 
       <label>
         Şifre
-        <input v-model="password" type="password" class="btn" style="width:100%" />
+        <input
+          v-model="password"
+          type="password"
+          class="btn"
+          placeholder="••••••••"
+        />
       </label>
 
-      <button
-        @click="register"
-        style="background:#0f172a;color:white;border:none;padding:8px 0;border-radius:8px;cursor:pointer"
-      >
-        Kayıt Ol
+      <button type="submit" :disabled="loading" class="primary">
+        {{ loading ? 'Kaydediliyor…' : 'Kayıt Ol' }}
       </button>
 
-      <p v-if="message" class="muted">{{ message }}</p>
-    </div>
+      <p v-if="error" class="error">{{ error }}</p>
+    </form>
   </section>
 </template>
 
 <style scoped>
+.auth-wrapper {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 32px 12px;
+  display: grid;
+  gap: 16px;
+}
+.card {
+  background: #fff;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  display: grid;
+  gap: 12px;
+}
+.btn {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 8px;
+}
+.primary {
+  background: #ff8400;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.error {
+  color: #b91c1c;
+  font-size: 13px;
+}
 .muted {
   color: #94a3b8;
+  font-size: 14px;
 }
 </style>

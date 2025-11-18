@@ -1,61 +1,68 @@
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import useAuth from '../stores/useAuth'
 
-// Part-3'te buraya Firebase Auth'tan gelen kullanıcı bilgisi yerleştirilecek
-const user = ref({
-  name: 'Demo Kullanıcı',
-  email: 'demo@example.com',
-})
+const router = useRouter()
+const { user, logout } = useAuth()
 
-const orders = ref([
-  // Part-3'te Firestore'dan çekilecek
-  { id: 'ORD-001', total: 350, status: 'Hazırlanıyor' },
-  { id: 'ORD-002', total: 149, status: 'Teslim edildi' },
-])
+const email = computed(() => user.value?.email || '')
+const name = computed(() => user.value?.displayName || 'Misafir')
+
+const handleLogout = async () => {
+  await logout()
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
-  <section style="max-width:720px;margin:0 auto;display:grid;gap:16px">
+  <section class="profile-wrapper">
     <h2>Profil</h2>
-    <p class="muted">Kullanıcı bilgileri ve sipariş geçmişi.</p>
 
-    <!-- user card -->
-    <div
-      style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:14px;display:grid;gap:6px"
-    >
-      <h3>Hesap Bilgileri</h3>
-      <p><strong>Ad:</strong> {{ user.name }}</p>
-      <p><strong>E-posta:</strong> {{ user.email }}</p>
-      <p class="muted" style="font-size:12px">
-        Not: Giriş yaptıktan sonra bu alan Firebase'den gelecektir.
-      </p>
+    <div v-if="!email" class="muted">
+      Giriş yapmamışsınız. Lütfen önce giriş yapın.
     </div>
 
-    <!-- orders -->
-    <div
-      style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:14px;display:grid;gap:8px"
-    >
-      <h3>Siparişlerim</h3>
-      <div v-if="orders.length">
-        <div
-          v-for="o in orders"
-          :key="o.id"
-          style="display:flex;justify-content:space-between;align-items:center"
-        >
-          <div>
-            <strong>{{ o.id }}</strong>
-            <div class="muted">{{ o.status }}</div>
-          </div>
-          <div>{{ o.total }} ₺</div>
-        </div>
-      </div>
-      <p v-else class="muted">Henüz sipariş yok.</p>
+    <div v-else class="card">
+      <p><strong>İsim:</strong> {{ name }}</p>
+      <p><strong>E-posta:</strong> {{ email }}</p>
+
+      <button class="danger" @click="handleLogout">Çıkış Yap</button>
+
+      <p class="muted" style="margin-top:8px;">
+        İleride: Sipariş geçmişi bu sayfada listelenecek.
+      </p>
     </div>
   </section>
 </template>
 
 <style scoped>
+.profile-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 12px;
+  display: grid;
+  gap: 16px;
+}
+.card {
+  background: #fff;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  display: grid;
+  gap: 8px;
+}
+.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
 .muted {
   color: #94a3b8;
+  font-size: 14px;
 }
 </style>
