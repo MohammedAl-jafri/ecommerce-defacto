@@ -1,113 +1,198 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase'
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
-const route = useRoute()
-const product = ref(null)
-const loading = ref(true)
-const notFound = ref(false)
+const route = useRoute();
+const product = ref(null);
+const loading = ref(true);
+const notFound = ref(false);
 
 const loadProduct = async (id) => {
-  loading.value = true
-  notFound.value = false
+  loading.value = true;
+  notFound.value = false;
   try {
-    const refDoc = doc(db, 'products', id)
-    const snap = await getDoc(refDoc)
+    const refDoc = doc(db, "products", id);
+    const snap = await getDoc(refDoc);
     if (snap.exists()) {
-      const data = snap.data()
+      const data = snap.data();
       product.value = {
         id: snap.id,
-        // normalize field names so template doesn’t break
-        title: data.title || data.name || 'Ürün',
+        title: data.title || data.name || "Ürün",
         price: data.price || 0,
-        category: data.category || '',
-        image: data.image || 'https://via.placeholder.com/600x600?text=Product',
-        description: data.description || '',
-        ...data
-      }
+        category: data.category || "",
+        image:
+          data.image ||
+          "https://via.placeholder.com/600x600?text=Product+Image",
+        description: data.description || "",
+        ...data,
+      };
     } else {
-      product.value = null
-      notFound.value = true
+      product.value = null;
+      notFound.value = true;
     }
   } catch (err) {
-    console.error('Ürün alınamadı:', err)
-    notFound.value = true
+    console.error("Ürün alınamadı:", err);
+    notFound.value = true;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+
+// 🛒 add / increment quantity in cart
+const addToCart = () => {
+  if (!product.value) return;
+
+  const key = "cart";
+  const current = JSON.parse(localStorage.getItem(key) || "[]");
+
+  const idx = current.findIndex((i) => i.id === product.value.id);
+
+  if (idx !== -1) {
+    current[idx].qty = (current[idx].qty || 1) + 1;
+  } else {
+    current.push({
+      id: product.value.id,
+      title: product.value.title,
+      price: product.value.price,
+      category: product.value.category || "",
+      image: product.value.image,
+      qty: 1,
+    });
+  }
+
+  localStorage.setItem(key, JSON.stringify(current));
+  console.log("added to cart from detail:", product.value.title);
+};
 
 onMounted(() => {
-  loadProduct(route.params.id)
-})
+  loadProduct(route.params.id);
+});
 
-// if user navigates from /product/a → /product/b without full reload
 watch(
   () => route.params.id,
   (newId) => {
-    if (newId) loadProduct(newId)
+    if (newId) loadProduct(newId);
   }
-)
+);
 </script>
 
 <template>
-  <!-- loading -->
-  <p v-if="loading" class="muted">Yükleniyor…</p>
+  <section class="page">
+    <p v-if="loading" class="muted loading">Yükleniyor…</p>
 
-  <!-- not found -->
-  <div v-else-if="notFound" class="muted">
-    <h2>Ürün bulunamadı</h2>
-    <p>Bu ürün veritabanında yok veya silinmiş olabilir.</p>
-  </div>
-
-  <!-- product -->
-  <div
-    v-else
-    style="display:grid;grid-template-columns:1fr 1fr;gap:24px"
-  >
-    <img
-      :src="product.image"
-      :alt="product.title"
-      style="width:100%;border-radius:12px;border:1px solid #e5e7eb"
-    />
-    <div>
-      <h1>{{ product.title }}</h1>
-      <div class="muted" v-if="product.category">
-        Kategori: {{ product.category }}
-      </div>
-      <p class="price">
-        {{ product.price.toLocaleString('tr-TR') }} ₺
-      </p>
-      <button class="btn cta">Sepete Ekle</button>
-
-      <p class="muted" style="margin-top:1rem" v-if="product.description">
-        {{ product.description }}
-      </p>
-      <p class="muted" style="margin-top:1rem">
-        Part-2: Bu sayfa Firestore'dan besleniyor.
-      </p>
+    <div v-else-if="notFound" class="notfound">
+      <h2>Ürün bulunamadı</h2>
+      <p>Bu ürün veritabanında yok veya silinmiş olabilir.</p>
     </div>
-  </div>
+
+    <div v-else class="detail-container">
+      <div class="image-box">
+        <img :src="product.image" :alt="product.title" />
+      </div>
+
+      <div class="info-box">
+        <h1 class="title">{{ product.title }}</h1>
+
+        <p class="category" v-if="product.category">
+          {{ product.category }}
+        </p>
+
+        <div class="price">
+          {{ product.price.toLocaleString("tr-TR") }} ₺
+        </div>
+
+        <button class="btn-solid add-btn" @click="addToCart">
+          Sepete Ekle
+        </button>
+
+        <div class="desc" v-if="product.description">
+          {{ product.description }}
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
+.page {
+  background: #fafafa;
+  padding: 40px 10px 60px;
+  min-height: 60vh;
+}
+
+.detail-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 0.9fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.image-box {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+}
+.image-box img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.info-box {
+  padding-top: 6px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.category {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 14px 0 22px;
+}
+
+.btn-solid.add-btn {
+  background: #111827;
+  color: #fff;
+  padding: 12px 0;
+  width: 100%;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 22px;
+}
+
+.desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
 .muted {
   color: #6b7280;
 }
-.price {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #f97316;
-  margin: 0.6rem 0 1rem;
+.loading {
+  text-align: center;
 }
-.btn.cta {
-  background: #111827;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 0.9rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
+.notfound {
+  text-align: center;
+  padding: 40px;
 }
 </style>

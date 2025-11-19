@@ -27,17 +27,28 @@ const image = computed(() => {
   return src
 })
 
-// simple localStorage cart
+// 🛒 localStorage cart with quantity
 const addToCart = () => {
   const key = 'cart'
   const current = JSON.parse(localStorage.getItem(key) || '[]')
-  current.push({
-    id: props.item.id,
-    title: title.value,
-    price: price.value,
-    category: category.value,
-    image: image.value,
-  })
+
+  const idx = current.findIndex((i) => i.id === props.item.id)
+
+  if (idx !== -1) {
+    // product already in cart → sadece adet artır
+    current[idx].qty = (current[idx].qty || 1) + 1
+  } else {
+    // yeni ürün
+    current.push({
+      id: props.item.id,
+      title: title.value,
+      price: price.value,
+      category: category.value,
+      image: image.value,
+      qty: 1,
+    })
+  }
+
   localStorage.setItem(key, JSON.stringify(current))
   console.log('added to cart:', title.value)
 }
@@ -54,8 +65,8 @@ const addToCart = () => {
     <p class="price">{{ price }} ₺</p>
 
     <div class="actions">
-      <button class="btn-secondary" @click="$emit('detail', item)">Detay</button>
-      <button class="btn-primary" @click="addToCart">Sepete Ekle</button>
+      <button class="btn-outline" @click="$emit('detail', item)">Detay</button>
+      <button class="btn-solid" @click="addToCart">Sepete Ekle</button>
     </div>
   </article>
 </template>
@@ -65,10 +76,10 @@ const addToCart = () => {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  padding: 12px 12px 14px;
+  padding: 14px;
   display: grid;
-  gap: 8px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.02);
+  gap: 10px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.04);
 }
 
 .img-wrap {
@@ -89,42 +100,48 @@ const addToCart = () => {
 }
 
 .title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  color: #111827;
 }
 
 .cat {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
   text-transform: lowercase;
 }
 
 .price {
-  font-weight: 700;
-  color: #f97316;
+  font-weight: 600;
+  color: #111827;
+  font-size: 15px;
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
-.btn-secondary,
-.btn-primary {
+/* DeFacto style buttons */
+.btn-outline,
+.btn-solid {
   flex: 1;
-  border: none;
+  padding: 8px 0;
   border-radius: 8px;
-  padding: 6px 0;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
+  border: 1px solid #111827;
 }
 
-.btn-secondary {
-  background: #e5e7eb;
+/* white background, black text */
+.btn-outline {
+  color: #111827;
+  background: #ffffff;
 }
 
-.btn-primary {
-  background: #f97316;
-  color: white;
+/* black background, white text */
+.btn-solid {
+  color: #ffffff;
+  background: #111827;
 }
 </style>

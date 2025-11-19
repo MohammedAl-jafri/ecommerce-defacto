@@ -20,7 +20,6 @@ onMounted(async () => {
       id: d.id,
       ...d.data()
     }))
-    // show first 3
     featured.value = arr.slice(0, 3)
   } catch (e) {
     console.error(e)
@@ -31,9 +30,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="home-block">
-    <h2>Öne Çıkanlar</h2>
-    <p>Basit bir e-ticaret şablonu. Arama, grid, detay ve sepet sayfaları hazır.</p>
+  <section class="home">
+    <div class="hero-text">
+      <h1>Öne Çıkan Ürünler</h1>
+      <p>En sevilen ürünleri keşfet ve hemen alışverişe başla.</p>
+    </div>
 
     <div v-if="!loading" class="grid">
       <ProductCard
@@ -44,19 +45,49 @@ onMounted(async () => {
       />
     </div>
 
-    <p v-else>Ürünler yükleniyor…</p>
+    <p v-else class="loading-text">Ürünler yükleniyor…</p>
   </section>
 </template>
 
 <style scoped>
-.home-block {
-  background: #f8fafc00;
+/* Main container spacing like DeFacto */
+.home {
+  padding: 40px 0 60px;
+  background: #fafafa;
 }
 
+/* Title + subtitle */
+.hero-text {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hero-text h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.hero-text p {
+  font-size: 15px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Product grid like DeFacto */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 14px;
-  margin-top: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 22px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+/* Loading text */
+.loading-text {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 20px;
 }
 </style>

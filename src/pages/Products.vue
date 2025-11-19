@@ -94,27 +94,37 @@ const filtered = computed(() => {
 </script>
 
 <template>
-  <section style="display:grid;gap:12px">
-    <div style="display:flex;gap:8px;align-items:center">
-      <input v-model="q" placeholder="Ara…" class="btn" style="flex:1" />
+  <section class="products-page">
+    <header class="products-header">
+      <h1>Ürünler</h1>
+      <p>Tüm ürünleri listele, filtrele ve fiyatlara göre sırala.</p>
+    </header>
 
-      <select v-model="cat" class="btn" style="min-width:140px">
+    <!-- Filters row -->
+    <div class="filters">
+      <input
+        v-model="q"
+        placeholder="Ürün ara…"
+        class="filter-input"
+      />
+
+      <select v-model="cat" class="filter-select">
         <option value="">Kategori: Hepsi</option>
-        <!-- make sure these match Firestore categories -->
         <option value="tshirt">Tişört</option>
         <option value="jeans">Jean</option>
         <option value="shoes">Ayakkabı</option>
         <option value="clothing">Clothing</option>
       </select>
 
-      <select v-model="sort" class="btn" style="min-width:160px">
+      <select v-model="sort" class="filter-select">
         <option value="">Sırala</option>
         <option value="price-asc">Fiyat Artan</option>
         <option value="price-desc">Fiyat Azalan</option>
       </select>
     </div>
 
-    <div class="grid">
+    <!-- Product grid -->
+    <div class="grid" v-if="filtered.length">
       <ProductCard
         v-for="p in filtered"
         :key="p.id"
@@ -122,25 +132,80 @@ const filtered = computed(() => {
         @detail="goToDetail"
       />
     </div>
+
+    <p v-else class="empty-text">
+      Filtrelere uygun ürün bulunamadı.
+    </p>
   </section>
 </template>
 
 <style scoped>
+.products-page {
+  padding: 30px 0 50px;
+  background: #fafafa;
+}
+
+/* Title + subtitle like a store section */
+.products-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.products-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.products-header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Filters row */
+.filters {
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  padding: 0 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-input,
+.filter-select {
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  font-size: 14px;
+  background: #ffffff;
+  color: #111827;
+}
+
+.filter-input {
+  flex: 1;
+}
+
+.filter-select {
+  min-width: 160px;
+}
+
+/* Product grid similar to DeFacto layout */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 14px;
-  margin-top: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 22px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 10px;
 }
 
-.top-filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.top-filters > * {
-  min-height: 34px;
+/* Empty state */
+.empty-text {
+  text-align: center;
+  margin-top: 30px;
+  color: #6b7280;
 }
 </style>

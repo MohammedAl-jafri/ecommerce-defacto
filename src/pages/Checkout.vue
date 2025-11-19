@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { db } from '../firebase'
-import { auth } from '../firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import useAuth from '../stores/useAuth'
 
@@ -19,7 +18,13 @@ const loading = ref(false)
 onMounted(() => {
   const saved = localStorage.getItem('cart')
   if (saved) {
-    items.value = JSON.parse(saved)
+    const parsed = JSON.parse(saved)
+
+    // 🔹 normalize: make sure every item has qty
+    items.value = parsed.map(i => ({
+      ...i,
+      qty: i.qty || i.quantity || 1, // supports old data too
+    }))
   }
 
   // If cart is empty → send to /cart
@@ -30,13 +35,16 @@ onMounted(() => {
 
 // total price
 const total = computed(() =>
-  items.value.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)
+  items.value.reduce(
+    (sum, item) => sum + (item.price || 0) * (item.qty || 1),
+    0
+  )
 )
 
 // place order
 const placeOrder = async () => {
   message.value = ''
-  
+
   if (!address.value) {
     message.value = 'Adres zorunludur.'
     return
@@ -60,11 +68,13 @@ const placeOrder = async () => {
         id: i.id,
         title: i.title,
         price: i.price,
-        quantity: i.quantity || 1,
-        image: i.image
+        // 🔹 we keep "quantity" field in Firestore,
+        //   but read the value from local qty
+        quantity: i.qty || 1,
+        image: i.image,
       })),
       total: total.value,
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     }
 
     await addDoc(collection(db, 'orders'), orderData)
@@ -75,7 +85,6 @@ const placeOrder = async () => {
 
     // go to profile
     router.push('/profile')
-
   } catch (err) {
     console.error(err)
     message.value = 'Sipariş oluşturulurken hata oluştu!'
@@ -101,11 +110,11 @@ const placeOrder = async () => {
           :key="it.id"
           style="display:flex;justify-content:space-between"
         >
-          <span>{{ it.title }} (x{{ it.quantity || 1 }})</span>
-          <span>{{ it.price * (it.quantity || 1) }} ₺</span>
+          <span>{{ it.title }} (x{{ it.qty || 1 }})</span>
+          <span>{{ (it.price * (it.qty || 1)).toFixed(2) }} ₺</span>
         </div>
         <div style="text-align:right;margin-top:6px">
-          <strong>Toplam: {{ total }} ₺</strong>
+          <strong>Toplam: {{ total.toFixed(2) }} ₺</strong>
         </div>
       </div>
       <p v-else class="muted">Sepetiniz boş.</p>
@@ -126,20 +135,24 @@ const placeOrder = async () => {
 
       <label>
         Not
-        <input v-model="note" class="btn" style="width:100%" placeholder="Kapıya bırak, vs." />
+        <input
+          v-model="note"
+          class="btn"
+          style="width:100%"
+          placeholder="Kapıya bırak, vs."
+        />
       </label>
 
       <button
         @click="placeOrder"
         :disabled="loading"
-        style="background:#ff8400;color:white;border:none;padding:8px;border-radius:8px;cursor:pointer"
+        style="background:#111827;color:white;border:none;padding:8px;border-radius:8px;cursor:pointer"
       >
-        {{ loading ? "Gönderiliyor…" : "Siparişi Tamamla" }}
+        {{ loading ? 'Gönderiliyor…' : 'Siparişi Tamamla' }}
       </button>
 
       <p v-if="message" class="muted">{{ message }}</p>
     </div>
-
   </section>
 </template>
 
