@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import { auth } from '../firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 
@@ -36,10 +36,8 @@ const handleRegister = async () => {
       })
     }
 
-    // 🔁 Redirect to previous page if exists, else profile
     const redirectPath = route.query.redirect || '/profile'
     await router.push(redirectPath)
-
   } catch (err) {
     console.error(err)
     error.value = err.message
@@ -49,84 +47,183 @@ const handleRegister = async () => {
 }
 </script>
 
-
 <template>
-  <section class="auth-wrapper">
-    <h2>Kayıt Ol</h2>
-    <p class="muted">Firebase Authentication ile yeni kullanıcı oluşturma.</p>
+  <section class="auth-page">
+    <!-- LEFT HERO -->
+    <div class="auth-hero">
+      <div class="hero-overlay">
+        <h1>HEMEN ÜYE OL</h1>
+        <p>GIFT CLUB'IN AVANTAJLARLA DOLU DÜNYASINA SEN DE KATIL!</p>
+      </div>
+    </div>
 
-    <form class="card" @submit.prevent="handleRegister">
-      <label>
-        İsim
-        <input v-model="displayName" class="btn" placeholder="Adınız" />
-      </label>
+    <!-- RIGHT FORM PANEL -->
+    <div class="auth-panel">
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <RouterLink to="/login" class="tab">
+          GİRİŞ YAP
+        </RouterLink>
+        <RouterLink to="/register" class="tab" :class="{ active: true }">
+          ÜYE OL
+        </RouterLink>
+      </div>
 
-      <label>
-        E-posta
-        <input
-          v-model="email"
-          type="email"
-          class="btn"
-          placeholder="ornek@mail.com"
-        />
-      </label>
+      <form class="auth-form" @submit.prevent="handleRegister">
+        <div class="field-row">
+          <label class="field half">
+            <span class="label">AD</span>
+            <input
+              v-model="displayName"
+              placeholder="Adınız"
+            />
+          </label>
 
-      <label>
-        Şifre
-        <input
-          v-model="password"
-          type="password"
-          class="btn"
-          placeholder="••••••••"
-        />
-      </label>
+          <label class="field half">
+            <span class="label">SOYAD</span>
+            <input placeholder="Soyadınız" />
+          </label>
+        </div>
 
-      <button type="submit" :disabled="loading" class="primary">
-        {{ loading ? 'Kaydediliyor…' : 'Kayıt Ol' }}
-      </button>
+        <label class="field">
+          <span class="label">E-POSTA</span>
+          <input
+            v-model="email"
+            type="email"
+            placeholder="ornek@mail.com"
+          />
+        </label>
 
-      <p v-if="error" class="error">{{ error }}</p>
-    </form>
+        <label class="field">
+          <span class="label">ŞİFRE</span>
+          <input
+            v-model="password"
+            type="password"
+            placeholder="8-15 karakter, en az bir harf ve rakam"
+          />
+        </label>
+
+        <!-- You can add more fields if professor wants (phone, birth date, etc.) -->
+
+        <button type="submit" :disabled="loading" class="primary-btn">
+          {{ loading ? 'Kaydediliyor…' : 'ÜYE OL' }}
+        </button>
+
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+    </div>
   </section>
 </template>
 
 <style scoped>
-.auth-wrapper {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 32px 12px;
-  display: grid;
-  gap: 16px;
+.auth-page {
+  display: flex;
+  min-height: calc(100vh - 60px);
+  background: #f5f5f5;
 }
-.card {
+
+.auth-hero {
+  flex: 1.4;
+  background-image: url('https://images.pexels.com/photos/1353503/pexels-photo-1353503.jpeg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.hero-overlay h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.hero-overlay p {
+  font-size: 18px;
+}
+
+/* Right */
+.auth-panel {
+  flex: 1;
   background: #fff;
-  padding: 18px 16px;
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  text-decoration: none;
+  color: #555;
+  border-bottom: 2px solid transparent;
+}
+.tab.active,
+.tab.router-link-active {
+  font-weight: 600;
+  color: #000;
+  border-color: #000;
+}
+
+.auth-form {
   display: grid;
+  gap: 14px;
+}
+
+.field-row {
+  display: flex;
   gap: 12px;
 }
-.btn {
+.half {
+  flex: 1;
+}
+
+.field input {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 14px;
 }
-.primary {
-  background: #ff8400;
-  color: #fff;
+.label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #6b7280;
+}
+
+.primary-btn {
+  margin-top: 8px;
+  background: #111827;
+  color: white;
   border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 4px;
+  padding: 10px 0;
+  font-weight: 600;
   cursor: pointer;
+  font-size: 14px;
 }
+.primary-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .error {
+  margin-top: 8px;
   color: #b91c1c;
   font-size: 13px;
-}
-.muted {
-  color: #94a3b8;
-  font-size: 14px;
 }
 </style>

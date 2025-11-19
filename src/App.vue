@@ -53,21 +53,21 @@ const handleLogout = async () => {
             @keyup.enter="doSearch"
           />
 
-          <RouterLink to="/cart" class="btn">Sepet</RouterLink>
+          <!-- Sepet -->
+          <RouterLink to="/cart" class="btn btn-outline">Sepet</RouterLink>
 
           <!-- If NOT logged in -->
           <template v-if="!user">
-            <RouterLink to="/login" class="btn">Giriş</RouterLink>
-            <RouterLink to="/register" class="btn">Kayıt</RouterLink>
+            <RouterLink to="/login" class="btn btn-outline">Giriş</RouterLink>
+            <RouterLink to="/register" class="btn btn-outline">Kayıt</RouterLink>
           </template>
 
           <!-- If logged in -->
           <template v-else>
-            <RouterLink to="/profile" class="btn">Profil</RouterLink>
+            <RouterLink to="/profile" class="btn btn-outline">Profil</RouterLink>
             <button
               type="button"
-              class="btn"
-              style="background:#444"
+              class="btn btn-solid"
               @click="handleLogout"
             >
               Çıkış
@@ -153,15 +153,29 @@ body {
   outline: none;
 }
 
+/* buttons in header */
 .btn {
-  background: #ff6b00;
-  color: #fff;
   padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  border-radius: 4px;
   text-decoration: none;
   font-size: 0.9rem;
-  border: none;
+  border: 1px solid #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+}
+
+/* white background, black text */
+.btn-outline {
+  background: #ffffff;
+  color: #111827;
+}
+
+/* black background, white text */
+.btn-solid {
+  background: #111827;
+  color: #ffffff;
 }
 
 .tabs {
@@ -179,7 +193,7 @@ body {
 
 .tabs a.router-link-active {
   font-weight: 600;
-  color: #ff6b00;
+  color: #111827; /* was orange, now black */
 }
 
 .muted {
