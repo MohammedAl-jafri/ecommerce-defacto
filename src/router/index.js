@@ -1,5 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
+
+
 import Home from '../pages/Home.vue'
 import Products from '../pages/Products.vue'
 import ProductDetail from '../pages/ProductDetail.vue'
@@ -9,7 +11,7 @@ import Register from '../pages/Register.vue'
 import Profile from '../pages/Profile.vue'
 import Admin from '../pages/Admin.vue'
 import Checkout from '../pages/Checkout.vue'
-import NotFound from '../pages/NotFound.vue' // if you don't have it yet, we can add later
+import NotFound from '../pages/NotFound.vue'
 
 import { auth } from '../firebase'
 
@@ -19,14 +21,13 @@ const routes = [
   { path: '/product/:id', name: 'product', component: ProductDetail, props: true },
   { path: '/cart', name: 'cart', component: Cart },
   { path: '/checkout', name: 'checkout', component: Checkout },
+  
   { path: '/login', name: 'login', component: Login },
   { path: '/register', name: 'register', component: Register },
-  { path: '/profile', name: 'profile', component: Profile },
+  { path: '/profile', name: 'profile', component: Profile, meta: { requiresAuth: true } },
 
-  // only admin user can access
   { path: '/admin', name: 'admin', component: Admin, meta: { requiresAdmin: true } },
 
-  // catch-all
   { path: '/:pathMatch(.*)*', name: 'notfound', component: NotFound }
 ]
 
@@ -35,10 +36,9 @@ const router = createRouter({
   routes,
   scrollBehavior () {
     return { top: 0 }
-  }
+  },
 })
 
-// simple admin check: just one email is admin
 const ADMIN_EMAIL = 'admin@shopvue.com'
 
 router.beforeEach((to, from, next) => {
@@ -46,7 +46,6 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAdmin) {
     if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
-      // not allowed → go to login
       return next({ name: 'login' })
     }
   }

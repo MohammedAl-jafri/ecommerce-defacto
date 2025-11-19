@@ -13,12 +13,14 @@ const error = ref('')
 
 const handleLogin = async () => {
   error.value = ''
+
   if (!email.value || !password.value) {
     error.value = 'E-posta ve şifre zorunlu.'
     return
   }
 
   loading.value = true
+
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value)
     await router.push({ name: 'profile' })
@@ -34,9 +36,7 @@ const handleLogin = async () => {
 <template>
   <section class="auth-wrapper">
     <h2>Giriş</h2>
-    <p class="muted">
-      Firebase Auth ile e-posta/şifre girişi.
-    </p>
+    <p class="muted">Firebase Auth ile e-posta/şifre girişi.</p>
 
     <form class="card" @submit.prevent="handleLogin">
       <label>

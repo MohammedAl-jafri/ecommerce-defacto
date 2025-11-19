@@ -3,25 +3,25 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from '../firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import useAuth from '../stores/useAuth'
 
 const router = useRouter()
-const { user } = useAuth()
 
+const displayName = ref('')
 const email = ref('')
 const password = ref('')
-const displayName = ref('')
 const loading = ref(false)
 const error = ref('')
 
 const handleRegister = async () => {
   error.value = ''
+
   if (!email.value || !password.value) {
     error.value = 'E-posta ve şifre zorunlu.'
     return
   }
 
   loading.value = true
+
   try {
     const cred = await createUserWithEmailAndPassword(
       auth,
@@ -33,7 +33,6 @@ const handleRegister = async () => {
       await updateProfile(cred.user, { displayName: displayName.value })
     }
 
-    // after register → go profile
     await router.push({ name: 'profile' })
   } catch (err) {
     console.error(err)
@@ -47,9 +46,7 @@ const handleRegister = async () => {
 <template>
   <section class="auth-wrapper">
     <h2>Kayıt Ol</h2>
-    <p class="muted">
-      Part-3: Firebase Authentication ile gerçek kullanıcı kaydı.
-    </p>
+    <p class="muted">Firebase Authentication ile yeni kullanıcı oluşturma.</p>
 
     <form class="card" @submit.prevent="handleRegister">
       <label>
