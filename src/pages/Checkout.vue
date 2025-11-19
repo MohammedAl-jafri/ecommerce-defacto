@@ -1,28 +1,87 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { db } from '../firebase'
+import { auth } from '../firebase'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import useAuth from '../stores/useAuth'
 
+const router = useRouter()
+const { user } = useAuth()
+
+// cart
 const items = ref([])
-const total = ref(0)
+const address = ref('')
+const note = ref('')
+const message = ref('')
+const loading = ref(false)
 
 onMounted(() => {
   const saved = localStorage.getItem('cart')
   if (saved) {
     items.value = JSON.parse(saved)
   }
-  total.value = items.value.reduce((s, i) => s + (i.price || 0), 0)
+
+  // If cart is empty → send to /cart
+  if (!items.value.length) {
+    router.push('/cart')
+  }
 })
 
-const address = ref('')
-const note = ref('')
-const message = ref('')
+// total price
+const total = computed(() =>
+  items.value.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)
+)
 
-const placeOrder = () => {
+// place order
+const placeOrder = async () => {
+  message.value = ''
+  
   if (!address.value) {
     message.value = 'Adres zorunludur.'
     return
   }
-  // Part-3: burada Firestore'a sipariş kaydı yapılacak
-  message.value = 'Demo: Sipariş alındı (yerel).'
+
+  if (!user.value) {
+    // should not happen because route is protected, but safety
+    router.push('/login')
+    return
+  }
+
+  loading.value = true
+
+  try {
+    const orderData = {
+      userId: user.value.uid,
+      userEmail: user.value.email,
+      address: address.value,
+      note: note.value,
+      items: items.value.map((i) => ({
+        id: i.id,
+        title: i.title,
+        price: i.price,
+        quantity: i.quantity || 1,
+        image: i.image
+      })),
+      total: total.value,
+      createdAt: serverTimestamp()
+    }
+
+    await addDoc(collection(db, 'orders'), orderData)
+
+    // clear cart
+    localStorage.removeItem('cart')
+    items.value = []
+
+    // go to profile
+    router.push('/profile')
+
+  } catch (err) {
+    console.error(err)
+    message.value = 'Sipariş oluşturulurken hata oluştu!'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -42,8 +101,8 @@ const placeOrder = () => {
           :key="it.id"
           style="display:flex;justify-content:space-between"
         >
-          <span>{{ it.title }}</span>
-          <span>{{ it.price }} ₺</span>
+          <span>{{ it.title }} (x{{ it.quantity || 1 }})</span>
+          <span>{{ it.price * (it.quantity || 1) }} ₺</span>
         </div>
         <div style="text-align:right;margin-top:6px">
           <strong>Toplam: {{ total }} ₺</strong>
@@ -72,17 +131,15 @@ const placeOrder = () => {
 
       <button
         @click="placeOrder"
+        :disabled="loading"
         style="background:#ff8400;color:white;border:none;padding:8px;border-radius:8px;cursor:pointer"
       >
-        Siparişi Tamamla
+        {{ loading ? "Gönderiliyor…" : "Siparişi Tamamla" }}
       </button>
 
       <p v-if="message" class="muted">{{ message }}</p>
     </div>
 
-    <p class="muted" style="font-size:12px">
-      Not: Vize sonrası bu sayfa Firestore sipariş koleksiyonuna yazacak.
-    </p>
   </section>
 </template>
 

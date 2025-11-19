@@ -1,10 +1,14 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import useAuth from './stores/useAuth'
 
 // router tools
 const router = useRouter()
 const route = useRoute()
+
+// auth store
+const { user, logout } = useAuth()
 
 // search field state
 const search = ref(route.query.q || '')
@@ -17,7 +21,7 @@ watch(
   }
 )
 
-// when user presses Enter
+// when user presses Enter in search
 const doSearch = () => {
   router.push({
     name: 'products',
@@ -26,6 +30,12 @@ const doSearch = () => {
       cat: route.query.cat || undefined,
     },
   })
+}
+
+// logout handler
+const handleLogout = async () => {
+  await logout()
+  router.push('/login')
 }
 </script>
 
@@ -44,9 +54,25 @@ const doSearch = () => {
           />
 
           <RouterLink to="/cart" class="btn">Sepet</RouterLink>
-          <RouterLink to="/login" class="btn">Giriş</RouterLink>
-          <RouterLink to="/register" class="btn">Kayıt</RouterLink>
-          <RouterLink to="/profile" class="btn">Profil</RouterLink>
+
+          <!-- If NOT logged in -->
+          <template v-if="!user">
+            <RouterLink to="/login" class="btn">Giriş</RouterLink>
+            <RouterLink to="/register" class="btn">Kayıt</RouterLink>
+          </template>
+
+          <!-- If logged in -->
+          <template v-else>
+            <RouterLink to="/profile" class="btn">Profil</RouterLink>
+            <button
+              type="button"
+              class="btn"
+              style="background:#444"
+              @click="handleLogout"
+            >
+              Çıkış
+            </button>
+          </template>
         </div>
       </div>
 
@@ -55,7 +81,15 @@ const doSearch = () => {
         <RouterLink to="/products?cat=jeans">Jean</RouterLink>
         <RouterLink to="/products?cat=shoes">Ayakkabı</RouterLink>
         <RouterLink to="/products">Hepsi</RouterLink>
-        <RouterLink to="/admin" style="margin-left:auto">Admin</RouterLink>
+
+        <!-- Admin link only for admin user -->
+        <RouterLink
+          v-if="user && user.email === 'admin@shopvue.com'"
+          to="/admin"
+          style="margin-left:auto"
+        >
+          Admin
+        </RouterLink>
       </nav>
     </div>
   </header>
@@ -126,6 +160,8 @@ body {
   border-radius: 6px;
   text-decoration: none;
   font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
 }
 
 .tabs {

@@ -5,10 +5,14 @@ import { db } from '../firebase'
 
 const orders = ref([])
 const loading = ref(true)
+const error = ref('')
 
 onMounted(async () => {
   try {
-    const qOrders = query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
+    const qOrders = query(
+      collection(db, 'orders'),
+      orderBy('createdAt', 'desc')
+    )
     const snap = await getDocs(qOrders)
 
     orders.value = snap.docs.map(doc => ({
@@ -16,7 +20,8 @@ onMounted(async () => {
       ...doc.data()
     }))
   } catch (err) {
-    console.error("Orders could not be loaded:", err)
+    console.error('Orders could not be loaded:', err)
+    error.value = 'Orders could not be loaded.'
   } finally {
     loading.value = false
   }
@@ -28,6 +33,8 @@ onMounted(async () => {
     <h1>Admin • Orders</h1>
     <p class="muted">All orders from Firestore (latest first)</p>
 
+    <p v-if="error" class="error">{{ error }}</p>
+
     <div v-if="loading">Loading orders…</div>
 
     <div v-else>
@@ -38,18 +45,27 @@ onMounted(async () => {
       >
         <div class="order-header">
           <strong>Order #{{ o.id }}</strong>
-          <span>{{ new Date(o.createdAt?.seconds * 1000).toLocaleString() }}</span>
+          <span>
+            {{
+              o.createdAt?.toDate
+                ? o.createdAt.toDate().toLocaleString()
+                : 'No date'
+            }}
+          </span>
         </div>
 
         <p><strong>User:</strong> {{ o.userEmail }}</p>
         <p><strong>Total:</strong> {{ o.total }} ₺</p>
-        <p><strong>Items:</strong> {{ o.items.length }} product(s)</p>
+        <p><strong>Items:</strong> {{ o.items?.length || 0 }} product(s)</p>
+        <p v-if="o.address"><strong>Address:</strong> {{ o.address }}</p>
+        <p v-if="o.note"><strong>Note:</strong> {{ o.note }}</p>
 
         <details style="margin-top:8px">
           <summary>Show items</summary>
           <ul>
             <li v-for="item in o.items" :key="item.id">
-              {{ item.title }} — {{ item.price }} ₺
+              {{ item.title }}
+              (x{{ item.quantity || 1 }}) — {{ item.price }} ₺
             </li>
           </ul>
         </details>
@@ -77,5 +93,10 @@ onMounted(async () => {
 .muted {
   color: #777;
   font-size: 14px;
+}
+
+.error {
+  color: #b91c1c;
+  margin-bottom: 12px;
 }
 </style>

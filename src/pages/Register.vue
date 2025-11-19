@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { auth } from '../firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 
 const router = useRouter()
+const route = useRoute()
 
 const displayName = ref('')
 const email = ref('')
@@ -30,10 +31,15 @@ const handleRegister = async () => {
     )
 
     if (displayName.value) {
-      await updateProfile(cred.user, { displayName: displayName.value })
+      await updateProfile(cred.user, {
+        displayName: displayName.value
+      })
     }
 
-    await router.push({ name: 'profile' })
+    // 🔁 Redirect to previous page if exists, else profile
+    const redirectPath = route.query.redirect || '/profile'
+    await router.push(redirectPath)
+
   } catch (err) {
     console.error(err)
     error.value = err.message
@@ -42,6 +48,7 @@ const handleRegister = async () => {
   }
 }
 </script>
+
 
 <template>
   <section class="auth-wrapper">

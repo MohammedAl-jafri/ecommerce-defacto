@@ -9,8 +9,6 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
-<RouterLink to="/admin-orders" class="btn">View Orders</RouterLink>
-
 
 // form fields
 const title = ref('')
@@ -124,7 +122,14 @@ onMounted(loadProducts)
       background: #f5f5f5;
     "
   >
-    <h1>Admin • Ürün Ekle</h1>
+    <div class="admin-header">
+      <h1>Admin • Ürün Ekle</h1>
+
+      <!-- 🔗 New: View Orders button (in TEMPLATE, not in script) -->
+      <RouterLink to="/admin-orders" class="btn-link">
+        Siparişleri Gör
+      </RouterLink>
+    </div>
 
     <!-- FORM CARD -->
     <div
@@ -189,7 +194,7 @@ onMounted(loadProducts)
       <div v-if="image" style="margin-top: 4px">
         <p style="font-size: 12px; color: #666">Önizleme:</p>
         <img
-          :src="image.trim().replace(/^image:\\s*/i, '')"
+          :src="image.trim().replace(/^image:\s*/i, '')"
           alt="preview"
           style="max-width: 180px; border-radius: 8px; border: 1px solid #eee"
         />
@@ -198,7 +203,12 @@ onMounted(loadProducts)
       <!-- Açıklama -->
       <label>
         Açıklama
-        <textarea v-model="desc" rows="3" class="btn" style="width: 100%"></textarea>
+        <textarea
+          v-model="desc"
+          rows="3"
+          class="btn"
+          style="width: 100%"
+        ></textarea>
       </label>
 
       <!-- SUBMIT -->
@@ -229,7 +239,7 @@ onMounted(loadProducts)
           <div class="admin-card-top">
             <img
               v-if="p.image"
-              :src="String(p.image).trim().replace(/^image:\\s*/i, '')"
+              :src="String(p.image).trim().replace(/^image:\s*/i, '')"
               alt=""
               class="thumb"
             />
@@ -263,6 +273,26 @@ onMounted(loadProducts)
 .btn:focus {
   outline: none;
   border-color: #ff8400;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-link {
+  background: #ff8400;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  opacity: 0.9;
 }
 
 .admin-list {

@@ -70,16 +70,23 @@ const handleLogout = async () => {
       <div v-else-if="orders.length === 0" class="muted">
         Henüz bir siparişiniz yok.
       </div>
-      <ul v-else class="orders">
-        <li v-for="o in orders" :key="o.id">
-          <div>
-            <strong>{{ o.total?.toFixed(2) }} ₺</strong>
-            <div class="muted">
-              {{ o.items?.length || 0 }} ürün
-            </div>
-          </div>
-        </li>
-      </ul>
+<ul v-else class="orders">
+  <li v-for="o in orders" :key="o.id">
+    <div>
+      <strong>{{ o.total?.toFixed(2) }} ₺</strong>
+      <div class="muted">
+        {{ o.items?.length || 0 }} ürün
+        ·
+        {{ o.createdAt?.toDate?.().toLocaleString() }}
+      </div>
+      <div class="muted" style="margin-top:4px;font-size:13px">
+        <template v-for="item in o.items">
+          • {{ item.title }} (x{{ item.quantity || 1 }}) <br />
+        </template>
+      </div>
+    </div>
+  </li>
+</ul>
     </div>
   </section>
 </template>

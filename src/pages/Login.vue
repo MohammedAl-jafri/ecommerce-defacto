@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
 
 const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -23,7 +24,10 @@ const handleLogin = async () => {
 
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value)
-    await router.push({ name: 'profile' })
+
+    // 🔁 If there is a redirect (from guard), go there, else go to profile
+    const redirectPath = route.query.redirect || '/profile'
+    await router.push(redirectPath)
   } catch (err) {
     console.error(err)
     error.value = 'Giriş başarısız: ' + err.message
@@ -32,6 +36,7 @@ const handleLogin = async () => {
   }
 }
 </script>
+
 
 <template>
   <section class="auth-wrapper">
