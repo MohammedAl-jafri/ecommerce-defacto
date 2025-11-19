@@ -27,6 +27,8 @@ const routes = [
   { path: '/profile', name: 'profile', component: Profile, meta: { requiresAuth: true } },
 
   { path: '/admin', name: 'admin', component: Admin, meta: { requiresAdmin: true } },
+  { path: '/admin-orders', name: 'admin-orders', component: () => import('../pages/AdminOrders.vue') },
+
 
   { path: '/:pathMatch(.*)*', name: 'notfound', component: NotFound }
 ]

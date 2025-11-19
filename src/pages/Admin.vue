@@ -9,6 +9,8 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+<RouterLink to="/admin-orders" class="btn">View Orders</RouterLink>
+
 
 // form fields
 const title = ref('')
