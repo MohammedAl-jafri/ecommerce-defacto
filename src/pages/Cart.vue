@@ -132,6 +132,13 @@ const decreaseQty = (index) => {
         <p>Toplam:</p>
         <h2>{{ total.toFixed(2) }} ₺</h2>
       </div>
+
+      <!-- ✅ NEW: Checkout button -->
+      <div class="checkout-wrap">
+        <RouterLink to="/checkout" class="checkout-btn">
+          Ödemeye Geç
+        </RouterLink>
+      </div>
     </div>
   </section>
 </template>
@@ -279,5 +286,22 @@ h1 {
   font-size: 20px;
   font-weight: 700;
   color: #111827;
+}
+
+/* ✅ NEW: checkout button */
+.checkout-wrap {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.checkout-btn {
+  display: inline-block;
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
 }
 </style>

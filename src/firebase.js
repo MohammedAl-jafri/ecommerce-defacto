@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB3gW3B2TYPAv54MWg1S80WZwyndAEPug",
+  apiKey: "AIzaSyB3q3W8ZI2YpAv54Mwg1S00WZwydnAEpug",
   authDomain: "defacto-ecommerce.firebaseapp.com",
   projectId: "defacto-ecommerce",
-  storageBucket: "defacto-ecommerce.appspot.com",
+  storageBucket: "defacto-ecommerce.firebasestorage.app",
   messagingSenderId: "862659967617",
-  appId: "1:862659967617:web:1ce196467ab89df046b80e"
+  appId: "1:862659967617:web:1ce966467b80d9df046b80"
 };
 
 const app = initializeApp(firebaseConfig);
