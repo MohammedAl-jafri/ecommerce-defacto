@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import useAuth from './stores/useAuth'
+import FooterBar from './components/FooterBar.vue'
+
 
 // router tools
 const router = useRouter()
@@ -100,12 +102,9 @@ const handleLogout = async () => {
     </div>
   </main>
 
-  <footer class="container">
-    <p class="muted">
-      Part-1 starter • Vue + Router + Mock Data • Deploy to Bekent later
-    </p>
-  </footer>
+  <FooterBar />
 </template>
+
 
 <style>
 body {
