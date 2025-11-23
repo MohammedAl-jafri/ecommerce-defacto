@@ -1,11 +1,13 @@
+<!-- src/pages/Checkout.vue -->
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { db } from '../firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import useAuth from '../stores/useAuth'
 
 const router = useRouter()
+const route = useRoute()
 const { user } = useAuth()
 
 // cart
@@ -27,8 +29,8 @@ onMounted(() => {
     }))
   }
 
-  // If cart is empty → send to /cart
-  if (!items.value.length) {
+  // ✅ redirect to /cart فقط في الصفحة الحقيقية /checkout
+  if (route.name === 'checkout' && !items.value.length) {
     router.push('/cart')
   }
 })
@@ -44,6 +46,12 @@ const total = computed(() =>
 // place order
 const placeOrder = async () => {
   message.value = ''
+
+  // ✅ داخل /components: مجرد معاينة، لا نرسل طلب حقيقي
+  if (route.name !== 'checkout') {
+    message.value = 'Bu sadece bileşen önizlemesidir.'
+    return
+  }
 
   if (!address.value) {
     message.value = 'Adres zorunludur.'

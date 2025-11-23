@@ -1,93 +1,151 @@
+<!-- src/pages/Home.vue -->
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '../firebase'
-import ProductCard from '../components/ProductCard.vue'
-
-const featured = ref([])
-const loading = ref(true)
-const router = useRouter()
-
-const goToDetail = (product) => {
-  router.push(`/product/${product.id}`)
-}
-
-onMounted(async () => {
-  try {
-    const snap = await getDocs(collection(db, 'products'))
-    const arr = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }))
-    featured.value = arr.slice(0, 3)
-  } catch (e) {
-    console.error(e)
-  } finally {
-    loading.value = false
-  }
-})
+/* لا نحتاج حالياً أي منطق في السكربت,
+   RouterLink مسجّل عالمياً من vue-router */
 </script>
 
 <template>
   <section class="home">
-    <div class="hero-text">
-      <h1>Öne Çıkan Ürünler</h1>
-      <p>En sevilen ürünleri keşfet ve hemen alışverişe başla.</p>
-    </div>
+    <!-- HERO: Kadın / Erkek / Çocuk-Bebek -->
+    <div class="hero">
+      <div class="hero-title">DeFacto</div>
 
-    <div v-if="!loading" class="grid">
-      <ProductCard
-        v-for="p in featured"
-        :key="p.id"
-        :item="p"
-        @detail="goToDetail"
-      />
-    </div>
+      <div class="hero-grid">
+        <!-- Kadın -->
+        <RouterLink
+          to="/products?cat=women"
+          class="hero-card hero-women"
+        >
+          <span class="hero-label">KADIN</span>
+        </RouterLink>
 
-    <p v-else class="loading-text">Ürünler yükleniyor…</p>
+        <!-- Erkek -->
+        <RouterLink
+          to="/products?cat=men"
+          class="hero-card hero-men"
+        >
+          <span class="hero-label">ERKEK</span>
+        </RouterLink>
+
+        <!-- Çocuk / Bebek -->
+        <RouterLink
+          to="/products?cat=kids"
+          class="hero-card hero-kids"
+        >
+          <span class="hero-label">ÇOCUK / BEBEK</span>
+        </RouterLink>
+      </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
-/* Main container spacing like DeFacto */
 .home {
-  padding: 40px 0 60px;
   background: #fafafa;
 }
 
-/* Title + subtitle */
-.hero-text {
-  text-align: center;
-  margin-bottom: 30px;
+/* ================= HERO ================= */
+
+.hero {
+  background: #ffffff;
+  padding: 40px 0 40px;
 }
 
-.hero-text h1 {
-  font-size: 28px;
-  font-weight: 700;
+.hero-title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  margin-bottom: 16px;
   color: #111827;
 }
 
-.hero-text p {
-  font-size: 15px;
-  color: #6b7280;
-  margin-top: 6px;
-}
-
-/* Product grid like DeFacto */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 22px;
+.hero-grid {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
-/* Loading text */
-.loading-text {
-  text-align: center;
-  color: #6b7280;
-  margin-top: 20px;
+/* كل كرت صورة كبيرة مع نص في الوسط */
+.hero-card {
+  position: relative;
+  height: 420px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  /* 👍 عشان تأثير التكبير يكون ناعم */
+  transition: transform 0.45s ease;
+}
+
+/* التكبير عند المرور بالماوس مثل DeFacto */
+.hero-card:hover {
+  transform: scale(1.06);
+}
+
+/* نص KADIN / ERKEK / ÇOCUK */
+.hero-label {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+/* overlay خفيف فوق الصورة */
+.hero-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.45),
+    rgba(0, 0, 0, 0.1)
+  );
+  transition: background 0.35s ease;
+}
+
+.hero-card:hover::before {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.2)
+  );
+}
+
+/* 👇 هنا تقدر تغيّر الصور لاحقاً لو تحب تستخدم صور DeFacto الفعلية */
+.hero-women {
+  background-image: url('https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg');
+}
+.hero-men {
+  background-image: url('https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg');
+}
+.hero-kids {
+  background-image: url('https://images.pexels.com/photos/1094084/pexels-photo-1094084.jpeg');
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card {
+    height: 260px;
+  }
+
+  .hero-label {
+    font-size: 22px;
+    letter-spacing: 0.12em;
+  }
 }
 </style>
