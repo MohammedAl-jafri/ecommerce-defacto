@@ -1,6 +1,6 @@
 <!-- src/pages/ComponentsList.vue -->
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 // 🔹 ORIGINAL components/pages
 import HeaderBar from '../components/HeaderBar.vue'
@@ -12,6 +12,32 @@ import Checkout from './Checkout.vue'
 import Login from './Login.vue'
 import Register from './Register.vue'
 import Profile from './Profile.vue'
+import ProductDetail from './ProductDetail.vue'   // ⭐ صفحة منتج واحد
+
+// 🔹 Firestore
+import { db } from '../firebase'
+import { collection, getDocs, query, limit } from 'firebase/firestore'
+
+// ⭐ هذا الـ ref سنضع فيه منتج حقيقي من Firestore لعرضه في "Ürün Detay"
+const detailProduct = ref(null)
+
+// نجيب منتج واحد فقط من مجموعة products (مثلاً أول منتج)
+onMounted(async () => {
+  try {
+    const q = query(collection(db, 'products'), limit(1))
+    const snap = await getDocs(q)
+
+    if (!snap.empty) {
+      const d = snap.docs[0]
+      detailProduct.value = {
+        id: d.id,
+        ...d.data(),
+      }
+    }
+  } catch (err) {
+    console.error('Ürün Detay için ürün alınamadı:', err)
+  }
+})
 
 const sections = [
   {
@@ -46,8 +72,8 @@ const sections = [
     id: 'product-detail',
     order: '5',
     title: 'Ürün Detay',
-    subtitle: 'Ürün fotoğrafı، fiyat ve “Sepete Ekle”.',
-    component: Products,
+    subtitle: 'Ürün fotoğrafı, fiyat ve “Sepete Ekle”.',
+    component: ProductDetail,   // ✅ استبدلنا Products بـ ProductDetail
   },
   {
     id: 'cart',
@@ -93,6 +119,16 @@ const currentSection = computed(
 )
 const CurrentComponent = computed(() => currentSection.value.component)
 
+// ⭐ props حسب القسم الحالي
+const currentProps = computed(() => {
+  // لو إحنا في "Ürün Detay" نمرر المنتج الحقيقي كـ prop
+  if (currentSection.value.id === 'product-detail' && detailProduct.value) {
+    return { product: detailProduct.value }
+  }
+  // باقي الصفحات ما تحتاج props
+  return {}
+})
+
 const setActive = (id) => {
   activeId.value = id
 }
@@ -117,7 +153,6 @@ const setActive = (id) => {
 
           <div class="nav-texts">
             <span class="nav-title">{{ section.title }}</span>
-            <!-- 🔥 تمت إزالة nav-level -->
           </div>
         </button>
       </nav>
@@ -125,7 +160,8 @@ const setActive = (id) => {
 
     <!-- RIGHT: ONLY THE REAL COMPONENT -->
     <main class="preview-plain">
-      <component :is="CurrentComponent" />
+      <!-- نمرّر الـ props (لو موجودة) -->
+      <component :is="CurrentComponent" v-bind="currentProps" />
     </main>
   </div>
 </template>
