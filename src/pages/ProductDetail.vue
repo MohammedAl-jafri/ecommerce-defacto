@@ -1,81 +1,78 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 
-const route = useRoute();
-const product = ref(null);
-const loading = ref(true);
-const notFound = ref(false);
+// 🔹 Optional prop (used only in Components List preview)
+const props = defineProps({
+  product: {
+    type: Object,
+    default: null,
+  },
+})
+
+const route = useRoute()
+const product = ref(props.product)
+const loading = ref(true)
+const notFound = ref(false)
 
 const loadProduct = async (id) => {
-  loading.value = true;
-  notFound.value = false;
+  loading.value = true
+  notFound.value = false
   try {
-    const refDoc = doc(db, "products", id);
-    const snap = await getDoc(refDoc);
+    const refDoc = doc(db, 'products', id)
+    const snap = await getDoc(refDoc)
     if (snap.exists()) {
-      const data = snap.data();
+      const data = snap.data()
       product.value = {
         id: snap.id,
-        title: data.title || data.name || "Ürün",
+        title: data.title || data.name || 'Ürün',
         price: data.price || 0,
-        category: data.category || "",
+        category: data.category || '',
         image:
           data.image ||
-          "https://via.placeholder.com/600x600?text=Product+Image",
-        description: data.description || "",
+          'https://via.placeholder.com/600x600?text=Product+Image',
+        description: data.description || '',
         ...data,
-      };
+      }
     } else {
-      product.value = null;
-      notFound.value = true;
+      product.value = null
+      notFound.value = true
     }
   } catch (err) {
-    console.error("Ürün alınamadı:", err);
-    notFound.value = true;
+    console.error('Ürün alınamadı:', err)
+    notFound.value = true
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-// 🛒 add / increment quantity in cart
-const addToCart = () => {
-  if (!product.value) return;
-
-  const key = "cart";
-  const current = JSON.parse(localStorage.getItem(key) || "[]");
-
-  const idx = current.findIndex((i) => i.id === product.value.id);
-
-  if (idx !== -1) {
-    current[idx].qty = (current[idx].qty || 1) + 1;
-  } else {
-    current.push({
-      id: product.value.id,
-      title: product.value.title,
-      price: product.value.price,
-      category: product.value.category || "",
-      image: product.value.image,
-      qty: 1,
-    });
-  }
-
-  localStorage.setItem(key, JSON.stringify(current));
-  console.log("added to cart from detail:", product.value.title);
-};
-
+// 🔹 If prop is given (preview), just use it and skip Firestore
 onMounted(() => {
-  loadProduct(route.params.id);
-});
+  if (product.value) {
+    loading.value = false
+    return
+  }
 
+  const id = route.params.id
+  if (id) {
+    loadProduct(id)
+  } else {
+    loading.value = false
+    notFound.value = true
+  }
+})
+
+// 🔹 Only react to route changes when NOT in preview mode
 watch(
   () => route.params.id,
   (newId) => {
-    if (newId) loadProduct(newId);
-  }
-);
+    if (!props.product && newId) {
+      loadProduct(newId)
+    }
+  },
+)
 </script>
 
 <template>
@@ -100,10 +97,10 @@ watch(
         </p>
 
         <div class="price">
-          {{ product.price.toLocaleString("tr-TR") }} ₺
+          {{ product.price.toLocaleString('tr-TR') }} ₺
         </div>
 
-        <button class="btn-solid add-btn" @click="addToCart">
+        <button class="btn-solid add-btn">
           Sepete Ekle
         </button>
 

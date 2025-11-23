@@ -42,7 +42,7 @@ const handleLogin = async () => {
     <div class="auth-hero">
       <div class="hero-overlay">
         <h1>HEMEN GİRİŞ YAP</h1>
-        <p>ShopVue İLE TRENDLERİN MODA DÜNYASI</p>
+        <p>DeFacto İLE TRENDLERİN MODA DÜNYASI</p>
       </div>
     </div>
 

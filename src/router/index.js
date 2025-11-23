@@ -12,58 +12,90 @@ import Admin from '../pages/Admin.vue'
 import Checkout from '../pages/Checkout.vue'
 import NotFound from '../pages/NotFound.vue'
 
+// ⭐ Our new main page
+import ComponentsList from '../pages/ComponentsList.vue'
+
 import { auth } from '../firebase'
 
 const routes = [
-  { path: '/', name: 'home', component: Home },
+  // Landing page -> Components list
+  { path: '/', redirect: '/components' },
+
+  { path: '/components', name: 'components', component: ComponentsList },
+
   { path: '/products', name: 'products', component: Products },
-  { path: '/product/:id', name: 'product', component: ProductDetail, props: true },
+  {
+    path: '/product/:id',
+    name: 'product',
+    component: ProductDetail,
+    props: true,
+  },
   { path: '/cart', name: 'cart', component: Cart },
 
-  // 🔐 Checkout must be protected
-  { path: '/checkout', name: 'checkout', component: Checkout, meta: { requiresAuth: true } },
+  // 🔐 Protected
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: Checkout,
+    meta: { requiresAuth: true },
+  },
 
   { path: '/login', name: 'login', component: Login },
   { path: '/register', name: 'register', component: Register },
 
-  // 🔐 Profile is protected
-  { path: '/profile', name: 'profile', component: Profile, meta: { requiresAuth: true } },
+  // 🔐 Profile protected
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: { requiresAuth: true },
+  },
 
-  // 🔐 Admin pages
-  { path: '/admin', name: 'admin', component: Admin, meta: { requiresAdmin: true } },
-  { path: '/admin-orders', name: 'admin-orders', component: () => import('../pages/AdminOrders.vue'), meta: { requiresAdmin: true } },
+  // 🔐 Admin
+  {
+    path: '/admin',
+    name: 'admin',
+    component: Admin,
+    meta: { requiresAdmin: true },
+  },
+  {
+    path: '/admin-orders',
+    name: 'admin-orders',
+    component: () => import('../pages/AdminOrders.vue'),
+    meta: { requiresAdmin: true },
+  },
 
-  { path: '/:pathMatch(.*)*', name: 'notfound', component: NotFound }
+  // 404
+  { path: '/:pathMatch(.*)*', name: 'notfound', component: NotFound },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior () {
+  scrollBehavior() {
     return { top: 0 }
   },
 })
 
-const ADMIN_EMAIL = 'admin@shopvue.com'
+const ADMIN_EMAIL = 'admin@DeFacto.com'
 
 router.beforeEach((to, from, next) => {
   const currentUser = auth.currentUser
 
-  // 🔐 If route requires login but user not logged in
+  // needs login
   if (to.meta.requiresAuth && !currentUser) {
     return next({
       name: 'login',
-      query: { redirect: to.fullPath } // so user returns after login
+      query: { redirect: to.fullPath },
     })
   }
 
-  // 🔐 Admin routes
+  // needs admin
   if (to.meta.requiresAdmin) {
-    if (!currentUser) {
-      return next({ name: 'login' })
-    }
+    if (!currentUser) return next({ name: 'login' })
     if (currentUser.email !== ADMIN_EMAIL) {
-      return next({ name: 'home' }) // block non-admins
+      // redirect to components list instead of 'home' (we don't have that)
+      return next({ name: 'components' })
     }
   }
 
