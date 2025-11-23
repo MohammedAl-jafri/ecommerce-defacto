@@ -24,7 +24,7 @@ const detailProduct = ref(null)
 // نجيب منتج واحد فقط من مجموعة products (مثلاً أول منتج)
 onMounted(async () => {
   try {
-    const q = query(collection(db, 'products'), limit(1))
+    const q = query(collection(db, 'products'), limit(4))
     const snap = await getDocs(q)
 
     if (!snap.empty) {

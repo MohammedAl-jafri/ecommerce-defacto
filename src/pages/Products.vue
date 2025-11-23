@@ -1,3 +1,4 @@
+<!-- src/pages/Products.vue -->
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -8,33 +9,35 @@ import { db } from '../firebase'
 const route = useRoute()
 const router = useRouter()
 
-// all products from Firestore
+// كل المنتجات من Firestore
 const all = ref([])
 
-// query params
+// الـ query params من الـ URL
 const q = ref(route.query.q || '')
+// cat هنا = mainCategory (women / men / kids / accessory)
 const cat = ref(route.query.cat || '')
 const sort = ref(route.query.sort || '')
 
-// navigate to detail
+// فتح صفحة التفاصيل
 const goToDetail = (product) => {
   router.push(`/product/${product.id}`)
 }
 
-// sync URL with filters
+// تحديث الـ URL لما يتغيّر أي فلتر
 const applyQueryToUrl = () => {
   router.replace({
     name: 'products',
     query: {
       q: q.value || undefined,
       cat: cat.value || undefined,
-      sort: sort.value || undefined
-    }
+      sort: sort.value || undefined,
+    },
   })
 }
 
 watch([q, cat, sort], applyQueryToUrl)
 
+// لو تغيّر الـ URL من مكان ثاني (مثلاً من /home) نزامن القيم
 watch(
   () => route.query,
   (nv) => {
@@ -44,48 +47,55 @@ watch(
   }
 )
 
-// 🔥 get products from Firestore
+// 🔥 قراءة المنتجات من Firestore
 onMounted(async () => {
   const snapshot = await getDocs(collection(db, 'products'))
-  // normalize fields so ProductCard and filters work
-  all.value = snapshot.docs.map(doc => {
-    const data = doc.data()
+
+  all.value = snapshot.docs.map((docSnap) => {
+    const data = docSnap.data()
     return {
-      id: doc.id,
-      // if Firestore has "name", make a "title" too
+      id: docSnap.id,
       title: data.title || data.name || 'Ürün',
       price: data.price || 0,
+
+      // sub category (tshirt, jeans, shoes...) لو حاب تستعمله لاحقاً
       category: data.category || '',
-      // ✅ clean image (trim + remove "image:" prefix if it exists)
+
+      // 👇 الحقل الجديد اللي أضفناه في Firestore
+      mainCategory: data.mainCategory || '', // women / men / kids / accessory
+
+      // تنظيف رابط الصورة
       image: (data.image || '')
         .toString()
         .trim()
         .replace(/^image:\s*/i, ''),
-      ...data
+
+      ...data,
     }
   })
 })
 
+// الفلترة + البحث + الترتيب
 const filtered = computed(() => {
   let items = all.value
 
-  // filter by category
+  // فلتر حسب mainCategory لو تم اختيارها
   if (cat.value) {
-    items = items.filter(i => i.category === cat.value)
+    items = items.filter((i) => i.mainCategory === cat.value)
   }
 
-  // search by title
+  // البحث في عنوان المنتج
   if (q.value) {
-    items = items.filter(i =>
-      (i.title || '').toLowerCase().includes(q.value.toLowerCase())
+    const term = q.value.toLowerCase()
+    items = items.filter((i) =>
+      (i.title || '').toLowerCase().includes(term),
     )
   }
 
-  // sort
+  // الترتيب بالسعر
   if (sort.value === 'price-asc') {
     items = [...items].sort((a, b) => a.price - b.price)
-  }
-  if (sort.value === 'price-desc') {
+  } else if (sort.value === 'price-desc') {
     items = [...items].sort((a, b) => b.price - a.price)
   }
 
@@ -100,22 +110,25 @@ const filtered = computed(() => {
       <p>Tüm ürünleri listele, filtrele ve fiyatlara göre sırala.</p>
     </header>
 
-    <!-- Filters row -->
+    <!-- سطر الفلاتر -->
     <div class="filters">
+      <!-- بحث -->
       <input
         v-model="q"
         placeholder="Ürün ara…"
         class="filter-input"
       />
 
+      <!-- الفئة الرئيسية (women / men / kids / accessory) -->
       <select v-model="cat" class="filter-select">
         <option value="">Kategori: Hepsi</option>
-        <option value="tshirt">Tişört</option>
-        <option value="jeans">Jean</option>
-        <option value="shoes">Ayakkabı</option>
-        <option value="clothing">Clothing</option>
+        <option value="women">Kadın</option>
+        <option value="men">Erkek</option>
+        <option value="kids">Çocuk &amp; Bebek</option>
+        <option value="accessory">Aksesuar</option>
       </select>
 
+      <!-- الترتيب -->
       <select v-model="sort" class="filter-select">
         <option value="">Sırala</option>
         <option value="price-asc">Fiyat Artan</option>
@@ -123,7 +136,7 @@ const filtered = computed(() => {
       </select>
     </div>
 
-    <!-- Product grid -->
+    <!-- شبكة المنتجات -->
     <div class="grid" v-if="filtered.length">
       <ProductCard
         v-for="p in filtered"
@@ -145,7 +158,7 @@ const filtered = computed(() => {
   background: #fafafa;
 }
 
-/* Title + subtitle like a store section */
+/* العنوان */
 .products-header {
   text-align: center;
   margin-bottom: 20px;
@@ -163,7 +176,7 @@ const filtered = computed(() => {
   margin-top: 4px;
 }
 
-/* Filters row */
+/* سطر الفلاتر */
 .filters {
   max-width: 1100px;
   margin: 0 auto 18px;
@@ -192,7 +205,7 @@ const filtered = computed(() => {
   min-width: 160px;
 }
 
-/* Product grid similar to DeFacto layout */
+/* شبكة المنتجات */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -202,7 +215,7 @@ const filtered = computed(() => {
   padding: 0 10px;
 }
 
-/* Empty state */
+/* في حالة لا يوجد منتجات */
 .empty-text {
   text-align: center;
   margin-top: 30px;
