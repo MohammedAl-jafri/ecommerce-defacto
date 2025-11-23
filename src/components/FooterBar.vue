@@ -1,123 +1,48 @@
+<!-- src/components/FooterBar.vue -->
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import useAuth from '../stores/useAuth'
-
-// router tools
-const router = useRouter()
-const route = useRoute()
-
-// auth store
-const { user, logout } = useAuth()
-
-// search field state
-const search = ref(route.query.q || '')
-
-// update input when URL query changes
-watch(
-  () => route.query.q,
-  (nv) => {
-    search.value = nv || ''
-  }
-)
-
-// when user presses Enter in search
-const doSearch = () => {
-  router.push({
-    name: 'products',
-    query: {
-      q: search.value || undefined,
-      cat: route.query.cat || undefined,
-    },
-  })
-}
-
-// logout handler
-const handleLogout = async () => {
-  await logout()
-  router.push('/login')
-}
+// لا نحتاج أي منطق هنا، مجرد footer statik
 </script>
 
 <template>
-  <header class="top">
-    <div class="container">
-      <div class="row">
-        <RouterLink to="/" class="brand">DeFacto</RouterLink>
-
-        <div class="grow search">
-          <input
-            v-model="search"
-            placeholder="Ara • ürün adı…"
-            aria-label="Ürün ara"
-            @keyup.enter="doSearch"
-          />
-
-          <!-- Cart -->
-          <RouterLink to="/cart" class="btn btn-outline">Sepet</RouterLink>
-
-          <!-- 🔹 Components DEMO page (for teacher) -->
-          <RouterLink to="/components" class="btn btn-outline">
-            Components
-          </RouterLink>
-
-          <!-- If NOT logged in -->
-          <template v-if="!user">
-            <RouterLink to="/login" class="btn btn-outline">Giriş</RouterLink>
-            <RouterLink to="/register" class="btn btn-outline">Kayıt</RouterLink>
-          </template>
-
-          <!-- If logged in -->
-          <template v-else>
-            <RouterLink to="/profile" class="btn btn-outline">Profil</RouterLink>
-            <button
-              type="button"
-              class="btn btn-solid"
-              @click="handleLogout"
-            >
-              Çıkış
-            </button>
-          </template>
-        </div>
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="col">
+        <h3>Yardım & Destek</h3>
+        <a href="#">Sıkça Sorulan Sorular</a>
+        <a href="#">İade & Değişim</a>
+        <a href="#">Teslimat Bilgileri</a>
       </div>
 
-      <nav class="tabs">
-        <RouterLink to="/products?cat=tshirt">Tişört</RouterLink>
-        <RouterLink to="/products?cat=jeans">Jean</RouterLink>
-        <RouterLink to="/products?cat=shoes">Ayakkabı</RouterLink>
-        <RouterLink to="/products">Hepsi</RouterLink>
+      <div class="col">
+        <h3>Kampanyalar</h3>
+        <a href="#">Güncel Kampanyalar</a>
+        <a href="#">Üyelik Avantajları</a>
+        <a href="#">Hediye Kartları</a>
+      </div>
 
-        <!-- Admin link only for admin user -->
-        <RouterLink
-          v-if="user && user.email === 'admin@DeFacto.com'"
-          to="/admin"
-          style="margin-left:auto"
-        >
-          Admin
-        </RouterLink>
-      </nav>
+      <div class="col">
+        <h3>Sosyal Medya</h3>
+        <div class="social">
+          <span>Instagram</span>
+          <span>Twitter</span>
+          <span>Facebook</span>
+        </div>
+      </div>
     </div>
-  </header>
 
-  <main>
-    <div class="container">
-      <RouterView />
+    <div class="bottom">
+      <p>© 2025 DeFacto Clone – Öğrenci projesi (BSM Web Programlama)</p>
     </div>
-  </main>
-
-  <FooterBar />
+  </footer>
 </template>
 
-<style>
-body {
-  background: #f5f5f5;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-.top {
-  background: #fff;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 1rem;
+<style scoped>
+.footer {
+  margin-top: 40px;
+  background: #111827;
+  color: #e5e7eb;
+  padding: 24px 0 12px;
+  font-size: 13px;
 }
 
 .container {
@@ -126,72 +51,42 @@ body {
   padding: 0 1rem;
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  height: 60px;
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
 }
 
-.brand {
-  font-weight: 700;
-  font-size: 1.3rem;
-  text-decoration: none;
-  color: #222;
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.search input {
-  flex: 1;
-  padding: 0.4rem 0.7rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  outline: none;
-}
-
-/* buttons in header */
-.btn {
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  border: 1px solid #111827;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.btn-outline {
-  background: #ffffff;
-  color: #111827;
-}
-
-.btn-solid {
-  background: #111827;
-  color: #ffffff;
-}
-
-.tabs {
-  display: flex;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid #eee;
-}
-
-.tabs a {
-  text-decoration: none;
-  color: #444;
-  font-size: 0.9rem;
-}
-
-.tabs a.router-link-active {
+.col h3 {
+  font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  margin-bottom: 8px;
+  color: #f9fafb;
+}
+
+.col a {
+  display: block;
+  text-decoration: none;
+  color: #d1d5db;
+  margin-bottom: 4px;
+}
+
+.col a:hover {
+  text-decoration: underline;
+}
+
+.social span {
+  display: inline-block;
+  margin-right: 10px;
+  color: #e5e7eb;
+}
+
+.bottom {
+  margin-top: 12px;
+  border-top: 1px solid #374151;
+  padding-top: 8px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
 }
 </style>
