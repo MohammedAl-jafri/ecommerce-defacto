@@ -27,7 +27,7 @@ const isComponents = computed(() => route.name === 'components')
 <style>
 body {
   background: #f5f5f5;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .container {

@@ -53,10 +53,9 @@
 
 .hero-title {
   text-align: center;
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  margin-bottom: 16px;
+  font-size: 75px;
+  font-weight: 300;
+  margin-bottom: 40px;
   color: #111827;
 }
 
