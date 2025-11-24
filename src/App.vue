@@ -1,3 +1,11 @@
+<!--
+  Project: DeFacto E-Commerce (Vue + Firebase)
+  Prepared by: Mohammed Khalid Abdullah Al-Jafri
+  Student No: 210101088
+  Date: 2025-11-24
+-->
+
+
 <!-- src/App.vue -->
 <script setup>
 import { computed } from 'vue'
