@@ -12,7 +12,7 @@ import Admin from '../pages/Admin.vue'
 import Checkout from '../pages/Checkout.vue'
 import NotFound from '../pages/NotFound.vue'
 
-// ⭐ Our new main page
+// ⭐ Components list main page
 import ComponentsList from '../pages/ComponentsList.vue'
 
 import { auth } from '../firebase'
@@ -77,12 +77,16 @@ const router = createRouter({
   },
 })
 
-const ADMIN_EMAIL = 'admin@DeFacto.com'
+// ❗ خليه lowercase ثابت
+const ADMIN_EMAIL = 'admin@defacto.com'
 
 router.beforeEach((to, from, next) => {
   const currentUser = auth.currentUser
 
-  // needs login
+  // debug بسيط (تقدر تشوفه في F12 > Console)
+  console.log('currentUser in guard =', currentUser?.email)
+
+  // يحتاج تسجيل دخول عادي
   if (to.meta.requiresAuth && !currentUser) {
     return next({
       name: 'login',
@@ -90,11 +94,17 @@ router.beforeEach((to, from, next) => {
     })
   }
 
-  // needs admin
+  // يحتاج admin
   if (to.meta.requiresAdmin) {
-    if (!currentUser) return next({ name: 'login' })
-    if (currentUser.email !== ADMIN_EMAIL) {
-      // redirect to components list instead of 'home' (we don't have that)
+    if (!currentUser) {
+      return next({ name: 'login', query: { redirect: to.fullPath } })
+    }
+
+    // نقارن lowercase + بدون مسافات
+    const userEmail = (currentUser.email || '').toLowerCase().trim()
+
+    if (userEmail !== ADMIN_EMAIL) {
+      // لو مو admin رجّعه للـ components
       return next({ name: 'components' })
     }
   }

@@ -1,3 +1,4 @@
+<!-- src/pages/Admin.vue -->
 <script setup>
 import { ref, onMounted } from 'vue'
 import {
@@ -14,6 +15,7 @@ import { db } from '../firebase'
 const title = ref('')
 const price = ref('')
 const category = ref('')
+const mainCategory = ref('') // 🔹 yeni: ana kategori (women/men/kids/accessory)
 const image = ref('')
 const desc = ref('')
 
@@ -50,6 +52,7 @@ const startEdit = (product) => {
   title.value = product.title || product.name || ''
   price.value = product.price || ''
   category.value = product.category || ''
+  mainCategory.value = product.mainCategory || '' // 🔹 ana kategori yükle
   image.value = product.image || ''
   desc.value = product.description || ''
   message.value = 'Editing mode'
@@ -73,6 +76,7 @@ const addProduct = async () => {
     title: title.value,
     price: Number(price.value),
     category: category.value,
+    mainCategory: mainCategory.value || null, // 🔹 ana kategori Firestore'a kaydedilir
     image: cleanImage,
     description: desc.value,
   }
@@ -96,6 +100,7 @@ const addProduct = async () => {
     title.value = ''
     price.value = ''
     category.value = ''
+    mainCategory.value = ''
     image.value = ''
     desc.value = ''
 
@@ -123,9 +128,9 @@ onMounted(loadProducts)
     "
   >
     <div class="admin-header">
-      <h1>Admin • Ürün Ekle</h1>
+      <h1>Admin • Ürün Yönetimi</h1>
 
-      <!-- 🔗 New: View Orders button (in TEMPLATE, not in script) -->
+      <!-- 🔗 Orders list -->
       <RouterLink to="/admin-orders" class="btn-link">
         Siparişleri Gör
       </RouterLink>
@@ -167,10 +172,22 @@ onMounted(loadProducts)
         />
       </label>
 
-      <!-- Kategori -->
+      <!-- Ana Kategori (Kadın / Erkek / Çocuk / Aksesuar) -->
       <label>
-        Kategori
-        <select v-model="category" class="btn" style="width: 200px">
+        Ana Kategori
+        <select v-model="mainCategory" class="btn" style="width: 220px">
+          <option value="">(boş)</option>
+          <option value="women">Kadın</option>
+          <option value="men">Erkek</option>
+          <option value="kids">Çocuk / Bebek</option>
+          <option value="accessory">Aksesuar</option>
+        </select>
+      </label>
+
+      <!-- Alt Kategori -->
+      <label>
+        Alt Kategori
+        <select v-model="category" class="btn" style="width: 220px">
           <option value="">(boş)</option>
           <option value="tshirt">tshirt</option>
           <option value="jeans">jeans</option>
@@ -245,7 +262,9 @@ onMounted(loadProducts)
             />
             <div>
               <strong>{{ p.title || p.name }}</strong>
-              <div class="muted">{{ p.category || '—' }}</div>
+              <div class="muted">
+                {{ p.mainCategory || '—' }} • {{ p.category || '—' }}
+              </div>
             </div>
           </div>
 
@@ -307,7 +326,7 @@ onMounted(loadProducts)
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 10px 12px;
-  width: 180px;
+  width: 200px;
   display: grid;
   gap: 6px;
 }
