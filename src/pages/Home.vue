@@ -1,7 +1,5 @@
 <!-- src/pages/Home.vue -->
 <script setup>
-/* لا نحتاج حالياً أي منطق في السكربت,
-   RouterLink مسجّل عالمياً من vue-router */
 </script>
 
 <template>
@@ -68,7 +66,6 @@
   gap: 10px;
 }
 
-/* كل كرت صورة كبيرة مع نص في الوسط */
 .hero-card {
   position: relative;
   height: 420px;
@@ -81,11 +78,9 @@
   cursor: pointer;
   background-size: cover;
   background-position: center;
-  /* 👍 عشان تأثير التكبير يكون ناعم */
   transition: transform 0.45s ease;
 }
 
-/* التكبير عند المرور بالماوس مثل DeFacto */
 .hero-card:hover {
   transform: scale(1.06);
 }
@@ -100,7 +95,6 @@
   letter-spacing: 0.18em;
 }
 
-/* overlay خفيف فوق الصورة */
 .hero-card::before {
   content: "";
   position: absolute;
@@ -121,7 +115,6 @@
   );
 }
 
-/* 👇 هنا تقدر تغيّر الصور لاحقاً لو تحب تستخدم صور DeFacto الفعلية */
 .hero-women {
   background-image: url('https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg');
 }

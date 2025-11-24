@@ -1,9 +1,6 @@
 <!-- src/components/FooterBar.vue -->
 <script setup>
-/**
- * لا يوجد منطق جافاسكربت حاليًا – هذا فقط Footer ثابت
- * لو احتجنا لاحقًا نجعل الروابط حقيقية يمكننا تعديلها.
- */
+
 </script>
 
 <template>
@@ -14,7 +11,6 @@
         <!-- 1) Mağazadan Teslim Al -->
         <div class="benefit-item">
           <div class="benefit-icon">
-            <!-- متجر صغير -->
             <span class="icon-shop"></span>
           </div>
           <div class="benefit-text">
@@ -196,7 +192,6 @@
   justify-content: center;
 }
 
-/* رموز مبسطة باستخدام borders فقط */
 .icon-shop,
 .icon-cash,
 .icon-change,

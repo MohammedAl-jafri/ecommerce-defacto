@@ -86,7 +86,7 @@ const decreaseQty = (index) => {
     item.qty -= 1
     saveCart()
   } else {
-    // qty 1 ise tekrar -'ye basınca ürünü kaldır
+    
     removeItem(index)
   }
 }

@@ -1,13 +1,12 @@
 <!-- src/pages/Checkout.vue -->
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { db } from '../firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import useAuth from '../stores/useAuth'
 
 const router = useRouter()
-const route = useRoute()
 const { user } = useAuth()
 
 // cart
@@ -18,19 +17,25 @@ const message = ref('')
 const loading = ref(false)
 
 onMounted(() => {
+  if (!user.value) {
+    router.push({
+      name: 'login',
+      query: { redirect: '/checkout' }, 
+    })
+    return
+  }
+
   const saved = localStorage.getItem('cart')
   if (saved) {
     const parsed = JSON.parse(saved)
 
-    // normalize: make sure every item has qty
     items.value = parsed.map((i) => ({
       ...i,
-      qty: i.qty || i.quantity || 1, // supports old data too
+      qty: i.qty || i.quantity || 1,
     }))
   }
 
-  // ✅ redirect to /cart فقط في الصفحة الحقيقية /checkout
-  if (route.name === 'checkout' && !items.value.length) {
+  if (!items.value.length) {
     router.push('/cart')
   }
 })
@@ -47,20 +52,16 @@ const total = computed(() =>
 const placeOrder = async () => {
   message.value = ''
 
-  // ✅ داخل /components: مجرد معاينة، لا نرسل طلب حقيقي
-  if (route.name !== 'checkout') {
-    message.value = 'Bu sadece bileşen önizlemesidir.'
-    return
-  }
-
   if (!address.value) {
     message.value = 'Adres zorunludur.'
     return
   }
 
   if (!user.value) {
-    // should not happen because route is protected, but safety
-    router.push('/login')
+    router.push({
+      name: 'login',
+      query: { redirect: '/checkout' },
+    })
     return
   }
 
@@ -76,7 +77,6 @@ const placeOrder = async () => {
         id: i.id,
         title: i.title,
         price: i.price,
-        // we keep "quantity" in Firestore, but read from local qty
         quantity: i.qty || 1,
         image: i.image,
       })),
@@ -100,6 +100,7 @@ const placeOrder = async () => {
   }
 }
 </script>
+
 
 <template>
   <section class="checkout-page">

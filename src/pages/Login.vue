@@ -8,14 +8,13 @@ import { auth } from '../firebase'
 const router = useRouter()
 const route = useRoute()
 
-// mode: 'email' أو 'phone' (UI فقط)
 const loginMode = ref('email')
 
 // email login
 const email = ref('')
 const password = ref('')
 
-// phone login (واجهة فقط)
+// phone login 
 const phoneNumber = ref('')
 const phonePassword = ref('')
 
@@ -25,14 +24,12 @@ const error = ref('')
 const handleLogin = async () => {
   error.value = ''
 
-  // إذا وضع الهاتف فقط واجهة
   if (loginMode.value === 'phone') {
     error.value =
       'Telefon ile giriş bu projede sadece arayüz (demo). Lütfen e-posta ile giriş yapın.'
     return
   }
 
-  // تحقق من البريد/الرمز
   if (!email.value || !password.value) {
     error.value = 'E-posta ve şifre zorunlu.'
     return
@@ -143,7 +140,6 @@ const handleLogin = async () => {
           </label>
 
           <label class="field">
-            <!-- 👇 هنا التعديل: اسم الحقل ŞİFRE بدل SMS KODU -->
             <span class="label">ŞİFRE</span>
             <input
               v-model="phonePassword"
@@ -200,7 +196,6 @@ const handleLogin = async () => {
   background: #ffffff;
 }
 
-/* LEFT SIDE – صورة + نص */
 .auth-hero {
   flex: 1.5;
   background-image: url('https://images.pexels.com/photos/1020370/pexels-photo-1020370.jpeg');

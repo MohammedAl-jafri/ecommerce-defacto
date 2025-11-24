@@ -100,7 +100,7 @@ const handleLogout = async () => {
 <style scoped>
 /* ===== HEADER WRAPPER ===== */
 .df-header {
-  background: #ffffff;       /* أبيض مثل الموقع الأصلي */
+  background: #ffffff;     
   border-bottom: 1px solid #eeeeee;
   padding: 10px 0;
 }
@@ -122,7 +122,6 @@ const handleLogout = async () => {
   gap: 26px;
 }
 
-/* ⚠️ لا أغيّر إعدادات الخط هنا حسب طلبك */
 .df-logo {
   font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
   font-size: 40px;
@@ -178,7 +177,6 @@ const handleLogout = async () => {
   color: #9b9ba3;
 }
 
-/* دائرة العدسة */
 .df-search-icon {
   width: 18px;
   height: 18px;
@@ -221,7 +219,6 @@ const handleLogout = async () => {
   font: inherit;
 }
 
-/* دوائر الأيقونات */
 .df-icon {
   width: 26px;
   height: 26px;
@@ -233,7 +230,6 @@ const handleLogout = async () => {
   position: relative;
 }
 
-/* user icon: دائرة + خط صغير */
 .df-icon-user::before {
   content: "";
   width: 8px;
@@ -283,13 +279,11 @@ const handleLogout = async () => {
   top: 5px;
 }
 
-/* label تحت/جنب الأيقونة */
 .df-icon-label {
   font-size: 13px;
   color: #111111;
 }
 
-/* صغير للموبايل */
 @media (max-width: 900px) {
   .df-container {
     grid-template-columns: auto auto;
@@ -307,7 +301,7 @@ const handleLogout = async () => {
   }
 
   .df-main-nav {
-    display: none; /* لو حبيت تبقيها في الموبايل عدّل هذا */
+    display: none; 
   }
 }
 </style>

@@ -77,16 +77,14 @@ const router = createRouter({
   },
 })
 
-// ❗ خليه lowercase ثابت
+// ❗  lowercase
 const ADMIN_EMAIL = 'admin@defacto.com'
 
 router.beforeEach((to, from, next) => {
   const currentUser = auth.currentUser
 
-  // debug بسيط (تقدر تشوفه في F12 > Console)
   console.log('currentUser in guard =', currentUser?.email)
 
-  // يحتاج تسجيل دخول عادي
   if (to.meta.requiresAuth && !currentUser) {
     return next({
       name: 'login',
@@ -94,17 +92,15 @@ router.beforeEach((to, from, next) => {
     })
   }
 
-  // يحتاج admin
+  //  admin
   if (to.meta.requiresAdmin) {
     if (!currentUser) {
       return next({ name: 'login', query: { redirect: to.fullPath } })
     }
 
-    // نقارن lowercase + بدون مسافات
     const userEmail = (currentUser.email || '').toLowerCase().trim()
 
     if (userEmail !== ADMIN_EMAIL) {
-      // لو مو admin رجّعه للـ components
       return next({ name: 'components' })
     }
   }

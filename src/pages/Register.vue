@@ -77,7 +77,6 @@ const handleRegister = async () => {
 
 <template>
   <section class="auth-page">
-    <!-- LEFT HERO (نفس الصورة والنص الذي اتفقنا عليه) -->
     <div class="auth-hero">
       <div class="hero-overlay">
         <h1>HEMEN ÜYE OL</h1>
@@ -220,7 +219,6 @@ const handleRegister = async () => {
           </div>
         </div>
 
-        <!-- (اختياري) نصوص الموافقة مثل الموقع الحقيقي – فقط واجهة -->
         <div class="agreements">
           <p class="agreement-text">
             Lütfen üye olmadan önce <span class="link-like">Üye Aydınlatma Metni</span>'ni okuyunuz.
@@ -243,7 +241,6 @@ const handleRegister = async () => {
           </label>
         </div>
 
-        <!-- زر التسجيل -->
         <button type="submit" :disabled="loading" class="primary-btn">
           {{ loading ? 'Kaydediliyor…' : 'ÜYE OL' }}
         </button>

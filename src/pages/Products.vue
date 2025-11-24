@@ -9,21 +9,18 @@ import { db } from '../firebase'
 const route = useRoute()
 const router = useRouter()
 
-// كل المنتجات من Firestore
 const all = ref([])
 
-// الـ query params من الـ URL
 const q = ref(route.query.q || '')
-// cat هنا = mainCategory (women / men / kids / accessory)
+// cat  = mainCategory (women / men / kids / accessory)
 const cat = ref(route.query.cat || '')
 const sort = ref(route.query.sort || '')
 
-// فتح صفحة التفاصيل
 const goToDetail = (product) => {
-  router.push(`/product/${product.id}`)
+  const pid = product.productId || product.id
+  router.push(`/product/${pid}`)
 }
 
-// تحديث الـ URL لما يتغيّر أي فلتر
 const applyQueryToUrl = () => {
   router.replace({
     name: 'products',
@@ -37,7 +34,6 @@ const applyQueryToUrl = () => {
 
 watch([q, cat, sort], applyQueryToUrl)
 
-// لو تغيّر الـ URL من مكان ثاني (مثلاً من /home) نزامن القيم
 watch(
   () => route.query,
   (nv) => {
@@ -47,7 +43,6 @@ watch(
   }
 )
 
-// 🔥 قراءة المنتجات من Firestore
 onMounted(async () => {
   const snapshot = await getDocs(collection(db, 'products'))
 
@@ -55,16 +50,16 @@ onMounted(async () => {
     const data = docSnap.data()
     return {
       id: docSnap.id,
+
+      productId: data.productId || null,
+
       title: data.title || data.name || 'Ürün',
       price: data.price || 0,
 
-      // sub category (tshirt, jeans, shoes...) لو حاب تستعمله لاحقاً
       category: data.category || '',
 
-      // 👇 الحقل الجديد اللي أضفناه في Firestore
       mainCategory: data.mainCategory || '', // women / men / kids / accessory
 
-      // تنظيف رابط الصورة
       image: (data.image || '')
         .toString()
         .trim()
@@ -75,16 +70,13 @@ onMounted(async () => {
   })
 })
 
-// الفلترة + البحث + الترتيب
 const filtered = computed(() => {
   let items = all.value
 
-  // فلتر حسب mainCategory لو تم اختيارها
   if (cat.value) {
     items = items.filter((i) => i.mainCategory === cat.value)
   }
 
-  // البحث في عنوان المنتج
   if (q.value) {
     const term = q.value.toLowerCase()
     items = items.filter((i) =>
@@ -92,7 +84,6 @@ const filtered = computed(() => {
     )
   }
 
-  // الترتيب بالسعر
   if (sort.value === 'price-asc') {
     items = [...items].sort((a, b) => a.price - b.price)
   } else if (sort.value === 'price-desc') {
@@ -110,16 +101,14 @@ const filtered = computed(() => {
       <p>Tüm ürünleri listele, filtrele ve fiyatlara göre sırala.</p>
     </header>
 
-    <!-- سطر الفلاتر -->
     <div class="filters">
-      <!-- بحث -->
       <input
         v-model="q"
         placeholder="Ürün ara…"
         class="filter-input"
       />
 
-      <!-- الفئة الرئيسية (women / men / kids / accessory) -->
+      <!--  (women / men / kids / accessory) -->
       <select v-model="cat" class="filter-select">
         <option value="">Kategori: Hepsi</option>
         <option value="women">Kadın</option>
@@ -128,7 +117,6 @@ const filtered = computed(() => {
         <option value="accessory">Aksesuar</option>
       </select>
 
-      <!-- الترتيب -->
       <select v-model="sort" class="filter-select">
         <option value="">Sırala</option>
         <option value="price-asc">Fiyat Artan</option>
@@ -136,7 +124,6 @@ const filtered = computed(() => {
       </select>
     </div>
 
-    <!-- شبكة المنتجات -->
     <div class="grid" v-if="filtered.length">
       <ProductCard
         v-for="p in filtered"
@@ -158,7 +145,6 @@ const filtered = computed(() => {
   background: #fafafa;
 }
 
-/* العنوان */
 .products-header {
   text-align: center;
   margin-bottom: 20px;
@@ -176,7 +162,6 @@ const filtered = computed(() => {
   margin-top: 4px;
 }
 
-/* سطر الفلاتر */
 .filters {
   max-width: 1100px;
   margin: 0 auto 18px;
@@ -205,7 +190,6 @@ const filtered = computed(() => {
   min-width: 160px;
 }
 
-/* شبكة المنتجات */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -215,7 +199,6 @@ const filtered = computed(() => {
   padding: 0 10px;
 }
 
-/* في حالة لا يوجد منتجات */
 .empty-text {
   text-align: center;
   margin-top: 30px;

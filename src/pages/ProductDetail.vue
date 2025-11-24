@@ -1,10 +1,18 @@
+<!-- src/pages/ProductDetail.vue -->
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { doc, getDoc } from 'firebase/firestore'
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  limit,
+} from 'firebase/firestore'
 import { db } from '../firebase'
 
-// 🔹 Optional prop (used only in Components List preview)
 const props = defineProps({
   product: {
     type: Object,
@@ -17,38 +25,96 @@ const product = ref(props.product)
 const loading = ref(true)
 const notFound = ref(false)
 
-const loadProduct = async (id) => {
+const buildProduct = (snap) => {
+  const data = snap.data()
+  return {
+    id: snap.id,
+    title: data.title || data.name || 'Ürün',
+    price: data.price || 0,
+    category: data.category || '',
+    image:
+      (data.image || '')
+        .toString()
+        .trim()
+        .replace(/^image:\s*/i, '') ||
+      'https://via.placeholder.com/600x600?text=Product+Image',
+    description: data.description || '',
+    ...data,
+  }
+}
+
+const loadProduct = async (idParam) => {
   loading.value = true
   notFound.value = false
+
   try {
-    const refDoc = doc(db, 'products', id)
-    const snap = await getDoc(refDoc)
-    if (snap.exists()) {
-      const data = snap.data()
-      product.value = {
-        id: snap.id,
-        title: data.title || data.name || 'Ürün',
-        price: data.price || 0,
-        category: data.category || '',
-        image:
-          data.image ||
-          'https://via.placeholder.com/600x600?text=Product+Image',
-        description: data.description || '',
-        ...data,
+    const asNumber = Number(idParam)
+    const isNumeric =
+      !Number.isNaN(asNumber) && String(asNumber) === String(idParam)
+
+    if (isNumeric) {
+      const qRef = query(
+        collection(db, 'products'),
+        where('productId', '==', asNumber),
+        limit(1)
+      )
+      const qSnap = await getDocs(qRef)
+
+      if (qSnap.empty) {
+        product.value = null
+        notFound.value = true
+      } else {
+        const docSnap = qSnap.docs[0]
+        product.value = buildProduct(docSnap)
       }
     } else {
-      product.value = null
-      notFound.value = true
+      const refDoc = doc(db, 'products', idParam)
+      const snap = await getDoc(refDoc)
+
+      if (snap.exists()) {
+        product.value = buildProduct(snap)
+      } else {
+        product.value = null
+        notFound.value = true
+      }
     }
   } catch (err) {
     console.error('Ürün alınamadı:', err)
+    product.value = null
     notFound.value = true
   } finally {
     loading.value = false
   }
 }
 
-// 🔹 If prop is given (preview), just use it and skip Firestore
+const addToCart = () => {
+  if (!product.value) return
+
+  const key = 'cart'
+  const current = JSON.parse(localStorage.getItem(key) || '[]')
+
+  const idx = current.findIndex((i) => i.id === product.value.id)
+
+  if (idx !== -1) {
+    // موجود → زِد الكمية
+    current[idx].qty = (current[idx].qty || 1) + 1
+  } else {
+    // جديد
+    current.push({
+      id: product.value.id,
+      title: product.value.title,
+      price: product.value.price,
+      category: product.value.category || '',
+      image: product.value.image,
+      qty: 1,
+    })
+  }
+
+  localStorage.setItem(key, JSON.stringify(current))
+  console.log('added to cart from detail:', product.value.title)
+}
+
+// 🔹 If prop is given (preview from ComponentsList), just use it and skip Firestore
 onMounted(() => {
   if (product.value) {
     loading.value = false
@@ -100,7 +166,7 @@ watch(
           {{ product.price.toLocaleString('tr-TR') }} ₺
         </div>
 
-        <button class="btn-solid add-btn">
+        <button class="btn-solid add-btn" @click="addToCart">
           Sepete Ekle
         </button>
 

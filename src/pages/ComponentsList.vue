@@ -12,30 +12,58 @@ import Checkout from './Checkout.vue'
 import Login from './Login.vue'
 import Register from './Register.vue'
 import Profile from './Profile.vue'
-import ProductDetail from './ProductDetail.vue'   // ⭐ صفحة منتج واحد
-
+import ProductDetail from './ProductDetail.vue'   
 // 🔹 Firestore
 import { db } from '../firebase'
-import { collection, getDocs, query, limit } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  limit,
+} from 'firebase/firestore'
 
-// ⭐ هذا الـ ref سنضع فيه منتج حقيقي من Firestore لعرضه في "Ürün Detay"
+const PREVIEW_PRODUCT_ID = 4
+
 const detailProduct = ref(null)
+const detailLoading = ref(true)
 
-// نجيب منتج واحد فقط من مجموعة products (مثلاً أول منتج)
 onMounted(async () => {
   try {
-    const q = query(collection(db, 'products'), limit(4))
-    const snap = await getDocs(q)
+    const qRef = query(
+      collection(db, 'products'),
+      where('productId', '==', PREVIEW_PRODUCT_ID),
+      limit(1)
+    )
+    const snap = await getDocs(qRef)
 
     if (!snap.empty) {
       const d = snap.docs[0]
+      const data = d.data()
+
       detailProduct.value = {
         id: d.id,
-        ...d.data(),
+        title: data.title || data.name || 'Ürün',
+        price: data.price || 0,
+        category: data.category || '',
+        image:
+          (data.image || '')
+            .toString()
+            .trim()
+            .replace(/^image:\s*/i, '') ||
+          'https://via.placeholder.com/600x600?text=Product+Image',
+        description: data.description || '',
+        ...data,
       }
+    } else {
+      console.warn('Bu productId için ürün bulunamadı:', PREVIEW_PRODUCT_ID)
+      detailProduct.value = null
     }
   } catch (err) {
     console.error('Ürün Detay için ürün alınamadı:', err)
+    detailProduct.value = null
+  } finally {
+    detailLoading.value = false
   }
 })
 
@@ -73,7 +101,7 @@ const sections = [
     order: '5',
     title: 'Ürün Detay',
     subtitle: 'Ürün fotoğrafı, fiyat ve “Sepete Ekle”.',
-    component: ProductDetail,   // ✅ استبدلنا Products بـ ProductDetail
+    component: ProductDetail,   
   },
   {
     id: 'cart',
@@ -119,13 +147,10 @@ const currentSection = computed(
 )
 const CurrentComponent = computed(() => currentSection.value.component)
 
-// ⭐ props حسب القسم الحالي
 const currentProps = computed(() => {
-  // لو إحنا في "Ürün Detay" نمرر المنتج الحقيقي كـ prop
   if (currentSection.value.id === 'product-detail' && detailProduct.value) {
     return { product: detailProduct.value }
   }
-  // باقي الصفحات ما تحتاج props
   return {}
 })
 
@@ -160,8 +185,27 @@ const setActive = (id) => {
 
     <!-- RIGHT: ONLY THE REAL COMPONENT -->
     <main class="preview-plain">
-      <!-- نمرّر الـ props (لو موجودة) -->
-      <component :is="CurrentComponent" v-bind="currentProps" />
+      <div v-if="currentSection.id === 'product-detail' && detailLoading" class="preview-loading">
+        Ürün detayı yükleniyor…
+      </div>
+
+      <ProductDetail
+        v-else-if="currentSection.id === 'product-detail' && detailProduct"
+        :product="detailProduct"
+      />
+
+      <div
+        v-else-if="currentSection.id === 'product-detail' && !detailProduct && !detailLoading"
+        class="preview-loading"
+      >
+        Gösterilecek ürün bulunamadı (productId = {{ PREVIEW_PRODUCT_ID }})
+      </div>
+
+      <component
+        v-else
+        :is="CurrentComponent"
+        v-bind="currentProps"
+      />
     </main>
   </div>
 </template>
@@ -243,5 +287,11 @@ const setActive = (id) => {
 .preview-plain {
   background: #f4f4f5;
   padding: 0;
+}
+
+.preview-loading {
+  padding: 16px;
+  color: #6b7280;
+  font-size: 14px;
 }
 </style>

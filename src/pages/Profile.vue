@@ -98,7 +98,6 @@ const saveProfile = async () => {
 }
 
 const deleteAccount = () => {
-  // فقط واجهة – لا نحذف فعلياً من Firebase (خطر)
   alert('Bu projede hesap silme işlemi sadece görsel olarak gösterilmektedir.')
 }
 </script>
