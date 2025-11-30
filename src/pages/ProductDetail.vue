@@ -96,10 +96,8 @@ const addToCart = () => {
   const idx = current.findIndex((i) => i.id === product.value.id)
 
   if (idx !== -1) {
-    // موجود → زِد الكمية
     current[idx].qty = (current[idx].qty || 1) + 1
   } else {
-    // جديد
     current.push({
       id: product.value.id,
       title: product.value.title,
@@ -114,7 +112,6 @@ const addToCart = () => {
   console.log('added to cart from detail:', product.value.title)
 }
 
-// 🔹 If prop is given (preview from ComponentsList), just use it and skip Firestore
 onMounted(() => {
   if (product.value) {
     loading.value = false
@@ -130,7 +127,6 @@ onMounted(() => {
   }
 })
 
-// 🔹 Only react to route changes when NOT in preview mode
 watch(
   () => route.params.id,
   (newId) => {

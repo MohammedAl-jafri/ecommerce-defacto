@@ -12,7 +12,6 @@ const router = useRouter()
 const all = ref([])
 
 const q = ref(route.query.q || '')
-// cat  = mainCategory (women / men / kids / accessory)
 const cat = ref(route.query.cat || '')
 const sort = ref(route.query.sort || '')
 

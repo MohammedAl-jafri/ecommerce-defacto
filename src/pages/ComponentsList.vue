@@ -23,7 +23,7 @@ import {
   limit,
 } from 'firebase/firestore'
 
-const PREVIEW_PRODUCT_ID = 4
+const PREVIEW_PRODUCT_ID = 7
 
 const detailProduct = ref(null)
 const detailLoading = ref(true)
