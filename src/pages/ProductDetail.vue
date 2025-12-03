@@ -12,6 +12,9 @@ import {
   limit,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { useCart } from '../stores/useCart'   // ✅ استيراد متجر السلة
+
+const cart = useCart()                        // ✅ إنشاء instance من السلة
 
 const props = defineProps({
   product: {
@@ -87,29 +90,12 @@ const loadProduct = async (idParam) => {
   }
 }
 
+/* ✅ الآن الإضافة للسلة تتم عن طريق Pinia useCart */
 const addToCart = () => {
   if (!product.value) return
 
-  const key = 'cart'
-  const current = JSON.parse(localStorage.getItem(key) || '[]')
-
-  const idx = current.findIndex((i) => i.id === product.value.id)
-
-  if (idx !== -1) {
-    current[idx].qty = (current[idx].qty || 1) + 1
-  } else {
-    current.push({
-      id: product.value.id,
-      title: product.value.title,
-      price: product.value.price,
-      category: product.value.category || '',
-      image: product.value.image,
-      qty: 1,
-    })
-  }
-
-  localStorage.setItem(key, JSON.stringify(current))
-  console.log('added to cart from detail:', product.value.title)
+  cart.addToCart(product.value)
+  console.log('added to cart from detail (pinia):', product.value.title)
 }
 
 onMounted(() => {
