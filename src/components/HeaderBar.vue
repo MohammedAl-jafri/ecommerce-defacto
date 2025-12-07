@@ -135,9 +135,10 @@ const handleLogout = async () => {
         </template>
 
         <!-- Favorilerim -->
-        <button class="df-right-link df-btn-plain" type="button">
+        <RouterLink to="/favorites" class="df-right-link">
           Favorilerim
-        </button>
+        </RouterLink>
+        
 
         <!-- Sepetim -->
         <RouterLink to="/cart" class="df-right-link">
