@@ -1,6 +1,10 @@
 <!-- src/components/ProductCard.vue -->
 <script setup>
 import { computed, ref } from 'vue'
+import { useFavorites } from '../stores/useFavorites'
+import { useToast } from '../stores/useToast'
+
+const toast = useToast()
 
 const props = defineProps({
   item: {
@@ -10,6 +14,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['detail'])
+
+const favorites = useFavorites()
 
 const fallback = 'https://via.placeholder.com/400x300.png?text=No+image'
 
@@ -27,56 +33,45 @@ const baseImage = computed(() => {
   if (!src || String(src).trim() === '') {
     return fallback
   }
-  return src
+  return String(src).trim()
 })
 
 // قائمة الصور (لـ hover بين أكثر من صورة عند توفرها)
 const imageList = computed(() => {
-  const list = []
+  const first = baseImage.value
+  const second = props.item.image2 || first
 
-  // لو عندك مصفوفة images في الـ Firestore
-  if (Array.isArray(props.item.images) && props.item.images.length) {
-    props.item.images.forEach((img) => {
-      if (img && String(img).trim() !== '') {
-        list.push(String(img).trim())
-      }
-    })
-  }
+  // للتأكد في الكونسول
+  console.log('Final images:', first, second)
 
-  // خصائص إضافية اختيارية
-  ;['image2', 'image3'].forEach((key) => {
-    if (props.item[key]) {
-      list.push(String(props.item[key]).trim())
-    }
-  })
-
-  // لو ما فيه ولا شيء → نستخدم الصورة الأساسية
-  if (!list.length) {
-    list.push(baseImage.value)
-  }
-
-  // حتى لو صورة واحدة فقط نكررها (لمنطقيّة الكود)
-  if (list.length === 1) {
-    list.push(list[0])
-  }
-
-  // نكتفي بأول صورتين
-  return list.slice(0, 2)
+  return [first, second]
 })
 
-const hovered = ref(false)
-const onEnter = () => {
-  hovered.value = true
-}
-const onLeave = () => {
-  hovered.value = false
+// قيمة التحريك أفقياً (%)
+const stripX = ref(0)
+
+const onMove = (event) => {
+  const rect = event.currentTarget.getBoundingClientRect()
+  const ratio = (event.clientX - rect.left) / rect.width
+  const clamped = Math.min(Math.max(ratio, 0), 1)
+
+  // لو الماوس راح شوي يمين عن النص → على طول الصورة الثانية
+  if (clamped > 0.52) {
+    stripX.value = -50
+  } else if (clamped < 0.48) {
+    // لو رجع شوي يسار عن النص → نرجع للصورة الأولى
+    stripX.value = 0
+  }
 }
 
-// 🛒 localStorage cart with quantity
+const onLeave = () => {
+  stripX.value = 0 // نرجع للصورة الأولى
+}
+
+// 🛒 localStorage cart with quantity (نتركه كما هو الآن)
 const addToCart = () => {
   const key = 'cart'
   const current = JSON.parse(localStorage.getItem(key) || '[]')
-
   const idx = current.findIndex((i) => i.id === props.item.id)
 
   if (idx !== -1) {
@@ -92,68 +87,57 @@ const addToCart = () => {
   }
 
   localStorage.setItem(key, JSON.stringify(current))
-  console.log('added to cart:', title.value)
+
+
+    // ⬅ هنا نظهر التوست
+  toast.showCartAdded()
 }
 
-// ❤️ Favorilerim (localStorage بسيط)
-const isFav = ref(false)
+// ❤️ Favorilerim عبر Pinia useFavorites
+const isFav = computed(() => favorites.isFav(props.item))
 
 const toggleFav = () => {
-  isFav.value = !isFav.value
-
-  const key = 'favorites'
-  const current = JSON.parse(localStorage.getItem(key) || '[]')
-
-  const idx = current.findIndex((i) => i.id === props.item.id)
-
-  if (isFav.value) {
-    if (idx === -1) {
-      current.push({
-        id: props.item.id,
-        title: title.value,
-        price: price.value,
-        image: baseImage.value,
-      })
-    }
-  } else if (idx !== -1) {
-    current.splice(idx, 1)
-  }
-
-  localStorage.setItem(key, JSON.stringify(current))
+  favorites.toggleFavorite(props.item)
 }
 </script>
 
 <template>
   <article class="card">
-    <!-- صورة المنتج (مع تأثير عند hover) -->
+    <!-- صورة المنتج -->
     <div
       class="img-wrap"
-      @mouseenter="onEnter"
+      @mousemove="onMove"
       @mouseleave="onLeave"
       @click="$emit('detail', item)"
     >
-      <!-- الصورة الأولى -->
-      <img
-        class="img img--base"
-        :src="imageList[0]"
-        :alt="title"
-      />
-      <!-- الصورة الثانية تظهر عند hover لو كانت مختلفة -->
-      <img
-        class="img img--hover"
-        :src="imageList[1]"
-        :alt="title"
-        :class="{ 'img--visible': hovered }"
-      />
+      <div
+        class="img-strip"
+        :style="{ transform: `translate3d(${stripX}%, 0, 0)` }"
+      >
+        <img
+          v-for="(src, idx) in imageList"
+          :key="idx"
+          class="img"
+          :src="src"
+          :alt="title"
+        />
+      </div>
 
       <!-- دائرة + لإضافة المنتج للسلة -->
-      <button
-        type="button"
-        class="icon-plus"
-        @click.stop="addToCart"
-      >
-        +
-      </button>
+<button
+  type="button"
+  class="icon-plus"
+  @click.stop="addToCart"
+  aria-label="Sepete ekle"
+>
+  <svg viewBox="0 0 12 12" class="icon-plus__svg">
+    <path
+      fill="currentColor"
+      d="M5.5 0v5.5H0v1h5.5V12h1V6.5H12v-1H6.5V0z"
+    />
+  </svg>
+</button>
+
     </div>
 
     <!-- صف تحت الصورة: مربّع الألوان + قلب -->
@@ -162,23 +146,45 @@ const toggleFav = () => {
         <span class="color-multi" />
       </div>
 
+      <!-- ❤️ أيقونة القلب (SVG) مرتبطة مع Pinia -->
       <button
         type="button"
         class="fav-link"
         :class="{ 'fav-link--active': isFav }"
         @click.stop="toggleFav"
+        aria-label="Favorilere ekle"
       >
-        <span v-if="isFav">♥</span>
-        <span v-else>♡</span>
+        <!-- مفضّل → قلب مليان -->
+        <svg
+          v-if="isFav"
+          viewBox="0 0 24 24"
+          class="fav-icon"
+        >
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            fill="#111111"
+          />
+        </svg>
+
+        <!-- غير مفضّل → قلب مفرغ (SVG مثل DeFacto) -->
+        <svg
+          v-else
+          viewBox="0 0 20 18"
+          class="fav-icon"
+        >
+          <path
+            fill="currentColor"
+            d="M5.197 0a5.06 5.06 0 0 0-3.69 1.6c-2.009 2.13-2.007 5.497 0 7.629l8.101 8.606a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l8.109-8.599c2.009-2.13 2.009-5.498 0-7.629a5.06 5.06 0 0 0-7.381 0L10 2.785 8.887 1.6A5.06 5.06 0 0 0 5.197 0m0 .911c1.047 0 2.096.436 2.922 1.311l1.497 1.592a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l1.489-1.585c1.651-1.751 4.185-1.75 5.836 0s1.651 4.635 0 6.385L10 16.798 2.283 8.606a4.74 4.74 0 0 1 0-6.385C3.108 1.347 4.15.911 5.196.911z"
+          />
+        </svg>
       </button>
     </div>
 
-    <!-- العنوان مباشرة تحت الصورة -->
+    <!-- العنوان والسعر -->
     <h3 class="title" @click="$emit('detail', item)">
       {{ title }}
     </h3>
 
-    <!-- السعر مباشرة تحت العنوان -->
     <div class="price-row">
       <span
         v-if="item.oldPrice"
@@ -206,7 +212,7 @@ const toggleFav = () => {
   gap: 4px;
 }
 
-/* الصورة أكبر مثل DeFacto (طولية) */
+/* الصورة طولية مثل DeFacto */
 .img-wrap {
   position: relative;
   width: 100%;
@@ -216,49 +222,53 @@ const toggleFav = () => {
   cursor: pointer;
 }
 
-/* طبقتان من الصور للتبديل + تأثير الحركة */
+/* شريط الصور (صورتان بجانب بعض) */
+.img-strip {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.08s ease-out;
+}
+
+/* كل صورة داخل الشريط */
 .img {
-  width: 100%;
+  flex: 0 0 50%;
+  width: 50%;
   height: 100%;
   object-fit: cover;
-  position: absolute;
-  inset: 0;
-  transition: opacity 0.35s ease, transform 0.4s ease;
-}
-
-.img--base {
-  opacity: 1;
-}
-
-.img--hover {
-  opacity: 0;
-}
-
-.img--hover.img--visible {
-  opacity: 1;
-}
-
-/* تأثير زوم/حركة خفيفة عند مرور الماوس (حتى مع صورة واحدة) */
-.img-wrap:hover .img {
-  transform: scale(1.04) translateY(-6px);
 }
 
 /* دائرة + */
 .icon-plus {
   position: absolute;
-  bottom: 12px;
-  right: 13px;
+  bottom: 15px;
+  right: 16px;
+
   width: 26px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: 50%;
+
   border: none;
   background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 29px;
-  font-weight: 300;
+
   cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(17, 17, 17, 0.06),
+    0 4px 10px rgba(0, 0, 0, 0.12);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* أيقونة الـ + نفسها */
+.icon-plus__svg {
+  width: 13px;
+  height: 13px;
+  color: #111111;
 }
 
 /* صف تحت الصورة: القلب فوق + الألوان تحته */
@@ -270,20 +280,13 @@ const toggleFav = () => {
   margin-top: 4px;
 }
 
-/* الحاوية التي بداخلها مربع الألوان */
 .colors-wrapper {
-  order: 2; /* الألوان تحت */
+  order: 2;
   display: flex;
   justify-content: flex-end;
   width: 100%;
 }
 
-/* القلب */
-.fav-link {
-  order: 1; /* القلب فوق */
-}
-
-/* مربع اللون المتعدّد مثل DeFacto */
 .color-multi {
   width: 13px;
   height: 13px;
@@ -300,22 +303,30 @@ const toggleFav = () => {
   border-radius: 2px;
 }
 
-/* القلب خارج الصورة في أقصى اليمين */
+/* القلب */
 .fav-link {
+  order: 1;
   border: none;
   background: none;
   padding: 0;
   cursor: pointer;
-  font-size: 25px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-8px);
+}
+
+.fav-icon {
+  width: 12px;
+  height: 18px;
   color: #22242a;
 }
 
-.fav-link--active {
+.fav-link--active .fav-icon {
   color: #111111;
 }
 
-/* العنوان قريب من الصورة */
+/* العنوان */
 .title {
   font-size: 14px;
   font-weight: 400;
@@ -324,7 +335,7 @@ const toggleFav = () => {
   cursor: pointer;
 }
 
-/* السعر تحت العنوان مباشرة */
+/* السعر */
 .price-row {
   display: flex;
   align-items: center;
@@ -338,7 +349,6 @@ const toggleFav = () => {
   text-decoration: line-through;
 }
 
-/* السعر العادي + شكل الخصم عند وجود oldPrice */
 .price-main {
   font-size: 13px;
   color: #111111;
@@ -349,5 +359,27 @@ const toggleFav = () => {
   padding: 2px 8px;
   background: #111111;
   color: #ffffff;
+}
+
+.under-image-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+
+  position: relative;
+  z-index: 2;
+  pointer-events: none; /* ⬅ الجديد: لا تستقبل كليكات */
+}
+
+.fav-link,
+.colors-wrapper {
+  pointer-events: auto; /* ⬅ القلب + الألوان فقط يستقبلوا الكليك */
+}
+
+.title {
+  position: relative;
+  z-index: 1;   /* العنوان تحتهم */
 }
 </style>

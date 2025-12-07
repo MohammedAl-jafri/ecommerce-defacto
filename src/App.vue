@@ -6,12 +6,13 @@
 -->
 
 
-<!-- src/App.vue -->
+<!-- src/App.vue (مع KeepAlive لـ ComponentsList فقط) -->
 <script setup>
 import { computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import HeaderBar from './components/HeaderBar.vue'
 import FooterBar from './components/FooterBar.vue'
+import CartToast from './components/CartToast.vue'
 
 const route = useRoute()
 const isComponents = computed(() => route.name === 'components')
@@ -19,12 +20,19 @@ const isComponents = computed(() => route.name === 'components')
 
 <template>
   <div>
-    <!-- Global header + footer ONLY outside /components -->
     <HeaderBar v-if="!isComponents" />
+
+        <!-- Toast موجود دائماً فوق الصفحة -->
+    <CartToast />
 
     <main>
       <div :class="isComponents ? 'fullpage' : 'container'">
-        <RouterView />
+        <!-- 🔥 هنا السحر -->
+        <RouterView v-slot="{ Component }">
+          <KeepAlive include="ComponentsList">
+            <component :is="Component" />
+          </KeepAlive>
+        </RouterView>
       </div>
     </main>
 

@@ -11,6 +11,7 @@ import Profile from '../pages/Profile.vue'
 import Admin from '../pages/Admin.vue'
 import Checkout from '../pages/Checkout.vue'
 import NotFound from '../pages/NotFound.vue'
+import Favorites from '../pages/Favorites.vue'
 
 // ⭐ Components list main page
 import ComponentsList from '../pages/ComponentsList.vue'
@@ -65,6 +66,8 @@ const routes = [
     meta: { requiresAdmin: true },
   },
 
+  { path: '/favorites', name: 'favorites', component: Favorites },
+  
   // 404
   { path: '/:pathMatch(.*)*', name: 'notfound', component: NotFound },
 ]
