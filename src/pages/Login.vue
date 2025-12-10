@@ -18,6 +18,29 @@ const password = ref('')
 const phoneNumber = ref('')
 const phonePassword = ref('')
 
+// متغير جديد لتتبع التركيز في حقل الهاتف بصفحة الدخول
+const isPhoneLoginFocused = ref(false)
+
+// دالة تنسيق الرقم (Mask) الخاصة بصفحة الدخول
+const formatPhoneNumber = (event) => {
+  let val = event.target.value.replace(/\D/g, '')
+
+  // حذف الصفر من البداية
+  if (val.startsWith('0')) val = val.substring(1)
+  
+  // الحد الأقصى 10 أرقام
+  val = val.substring(0, 10)
+
+  let formatted = ''
+  if (val.length > 0) formatted = '0(' + val.substring(0, 3)
+  if (val.length > 3) formatted += ') ' + val.substring(3, 6)
+  if (val.length > 6) formatted += ' ' + val.substring(6, 8)
+  if (val.length > 8) formatted += ' ' + val.substring(8, 10)
+
+  phoneNumber.value = formatted
+}
+
+
 const loading = ref(false)
 const error = ref('')
 
@@ -114,8 +137,13 @@ const handleLogin = async () => {
             <input
               v-model="phoneNumber"
               type="tel"
-              class="custom-input"
-              placeholder=" "
+              class="custom-input phone-input"
+              :placeholder="isPhoneLoginFocused && !phoneNumber ? '0(___) ___ __ __' : ' '"
+              @focus="isPhoneLoginFocused = true"
+              @blur="isPhoneLoginFocused = false"
+              @input="formatPhoneNumber"
+              autocomplete="off"
+              maxlength="17"
             />
             <label class="floating-label">TELEFON NUMARANIZ</label>
           </div>
@@ -335,7 +363,7 @@ const handleLogin = async () => {
   border: none;
   border-bottom: 1px solid #000000; /* خط رمادي فقط */
   border-radius: 0;
-  font-size: 14px;
+  font-size: 18px;
   color: #22242a;
   background: transparent;
   outline: none;
@@ -349,6 +377,16 @@ const handleLogin = async () => {
   font-weight: 500;
   text-transform: uppercase;
 }
+
+/* ✅ تعديل لإظهار الـ Placeholder الرمادي عند الضغط */
+.phone-input:focus::placeholder {
+  color: #000000;
+  font-weight: 400;
+  opacity: 1;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
 
 /* PASSWORD EYE ICON */
 .eye-btn {
