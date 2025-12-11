@@ -14,12 +14,18 @@ const isComponents = computed(() => route.name === 'components')
 // صفحات الدخول/التسجيل
 const isAuth = computed(() => route.name === 'login' || route.name === 'register')
 
-// الصفحات التي نريدها فل سكرين (components + login + register)
-const isFullPage = computed(() => isComponents.value || isAuth.value)
+// صفحة السلة (بناءً على الاسم أو المسار)
+const isCart = computed(
+  () => route.name === 'cart' || route.path === '/cart'
+)
+
+// الصفحات التي نريدها فل سكرين (components + login + register + cart)
+const isFullPage = computed(() => isComponents.value || isAuth.value || isCart.value)
 </script>
 
 <template>
   <div>
+    <!-- الهيدر يظهر في كل الصفحات ما عدا صفحة components فقط -->
     <HeaderBar v-if="!isComponents" />
 
     <CartToast />
@@ -33,6 +39,8 @@ const isFullPage = computed(() => isComponents.value || isAuth.value)
         </RouterView>
       </div>
     </main>
+
+    <!-- الفوتر أيضاً مخفي فقط في صفحة components -->
     <FooterBar v-if="!isComponents" />
   </div>
 </template>

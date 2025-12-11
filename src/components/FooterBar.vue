@@ -446,9 +446,8 @@ const onChangeCountry = () => {
 }
 
 .df-container {
-  max-width: 1100px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding: 0 16px;
 }
 
 /* ===== TOP BENEFITS ===== */
@@ -499,8 +498,8 @@ const onChangeCountry = () => {
 }
 
 .benefit-sub {
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #6b806b;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -528,10 +527,10 @@ const onChangeCountry = () => {
 }
 
 .col-title {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
   cursor: default;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -554,7 +553,7 @@ const onChangeCountry = () => {
 
 .col a {
   font-size: 12px;
-  color: #4b5563;
+  color: #4b634c;
   text-decoration: none;
   text-transform: uppercase;
   display: inline-block;
@@ -622,16 +621,16 @@ const onChangeCountry = () => {
   background: transparent;
   display: inline-flex; /* مهم جداً للمحاذاة */
   align-items: center;    /* لضمان توسيط الأيقونة مع النص عمودياً */
-  gap: 8px;               /* مسافة بين الأيقونة والنص */
-  font-size: 16px;
+  gap: 6px;               /* مسافة بين الأيقونة والنص */
+  font-size: 14px;
   text-transform: uppercase;
   color: #111;            /* لون النص والأيقونة الافتراضي */
   cursor: default;
 }
 
 .globe-icon {
-  width: 24px;            /* حجم الأيقونة المناسب */
-  height: 24px;
+  width: 21px;            /* حجم الأيقونة المناسب */
+  height: 21px;
   fill: currentColor;     /* يجعل الأيقونة تأخذ نفس لون النص */
   margin-bottom: 1px;     /* تعديل بسيط لرفع الأيقونة قليلاً لتوازي النص */
   pointer-events: none;

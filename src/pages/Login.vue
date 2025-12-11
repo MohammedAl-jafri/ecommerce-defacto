@@ -181,7 +181,7 @@ const handleLogin = async () => {
   <label class="floating-label">E-POSTA ADRESİNİZ</label>
 
   <div v-if="errors.email" class="input-error-msg">
-    <svg width="15" height="15" viewBox="0 0 20 20">
+    <svg width="16" height="16" viewBox="0 0 20 20">
       <path
         fill="currentColor"
         d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
@@ -240,7 +240,7 @@ const handleLogin = async () => {
             />
             <label class="floating-label">TELEFON NUMARANIZ</label>
     <div v-if="errors.phoneNumber" class="input-error-msg">
-      <svg width="15" height="15" viewBox="0 0 20 20">
+      <svg width="16" height="16" viewBox="0 0 20 20">
         <path
           fill="currentColor"
           d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
@@ -467,12 +467,12 @@ const handleLogin = async () => {
 
 .input-error-msg {
   color: #ff3b3b;
-  font-size: 10px;
-  margin-top: 6px;
+  font-size: 11px;
+  margin-top: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 400;
+  font-weight: 370;
 }
 
 

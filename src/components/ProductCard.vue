@@ -3,8 +3,10 @@
 import { computed, ref } from 'vue'
 import { useFavorites } from '../stores/useFavorites'
 import { useToast } from '../stores/useToast'
+import { useCart } from '../stores/useCart'
 
 const toast = useToast()
+const cart = useCart()
 
 const props = defineProps({
   item: {
@@ -68,28 +70,16 @@ const onLeave = () => {
   stripX.value = 0 // نرجع للصورة الأولى
 }
 
-// 🛒 localStorage cart with quantity (نتركه كما هو الآن)
 const addToCart = () => {
-  const key = 'cart'
-  const current = JSON.parse(localStorage.getItem(key) || '[]')
-  const idx = current.findIndex((i) => i.id === props.item.id)
-
-  if (idx !== -1) {
-    current[idx].qty = (current[idx].qty || 1) + 1
-  } else {
-    current.push({
-      id: props.item.id,
-      title: title.value,
-      price: price.value,
-      image: baseImage.value,
-      qty: 1,
-    })
+  const product = {
+    id: props.item.id,
+    title: title.value,
+    price: price.value,
+    category: props.item.category || '',
+    image: baseImage.value,
   }
 
-  localStorage.setItem(key, JSON.stringify(current))
-
-
-    // ⬅ هنا نظهر التوست
+  cart.addToCart(product, 1)
   toast.showCartAdded()
 }
 

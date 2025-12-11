@@ -357,21 +357,21 @@ const handleRegister = async () => {
             <div class="form-group third-width">
                 <label class="static-label">GÜN</label>
                 <select v-model="birthDay" class="custom-select">
-                    <option value="" disabled selected>SEÇİNİZ</option>
+                    <option value="">SEÇİNİZ</option>
                     <option v-for="d in days" :key="d" :value="d">{{ d }}</option>
                 </select>
             </div>
             <div class="form-group third-width">
                 <label class="static-label">AY</label>
                 <select v-model="birthMonth" class="custom-select">
-                    <option value="" disabled selected>SEÇİNİZ</option>
+                    <option value="">SEÇİNİZ</option>
                     <option v-for="m in months" :key="m" :value="m">{{ m }}</option>
                 </select>
             </div>
             <div class="form-group third-width">
                 <label class="static-label">YIL</label>
                 <select v-model="birthYear" class="custom-select">
-                    <option value="" disabled selected>SEÇİNİZ</option>
+                    <option value="">SEÇİNİZ</option>
                     <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
                 </select>
             </div>
@@ -656,11 +656,13 @@ const handleRegister = async () => {
     margin-bottom: 6px;
     font-weight: 500;
 }
+/* ستايل القائمة المنسدلة نفسها */
 .custom-select {
-    padding-top: 3px;
-    padding-bottom: 5px;
-    cursor: pointer;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  cursor: pointer;
 }
+
 
 /* PASSWORD EYE ICON */
 .eye-btn {

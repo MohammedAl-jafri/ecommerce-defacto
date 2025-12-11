@@ -1000,8 +1000,7 @@ const clearFilters = () => {
 }
 
 .products-title {
-  font-size: 14px;
-  letter-spacing: 0.18em;
+  font-size: 13px;
   font-weight: 400;
   color: #111111;
   text-transform: uppercase;
@@ -1028,8 +1027,7 @@ const clearFilters = () => {
 .filters-toggle {
   border: none;
   background: none;
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 12.3px;
   text-transform: uppercase;
   cursor: pointer;
   color: #111111;
