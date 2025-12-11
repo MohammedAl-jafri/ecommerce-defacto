@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
@@ -32,6 +32,30 @@ const isPhoneFocused = ref(false)
 
 // Errors State
 const errors = ref({})
+// ✅ حالة تتبع: هل بدأ المستخدم يكتب كلمة السر؟
+const passwordTouched = ref(false)
+
+// ✅ شروط كلمة السر
+const hasUpper = computed(() => /[A-ZÇĞİÖŞÜ]/.test(password.value))
+const hasLower = computed(() => /[a-zçğıöşü]/.test(password.value))
+const hasNumber = computed(() => /\d/.test(password.value))
+const hasLength = computed(() => password.value.length >= 8 && password.value.length <= 15)
+
+// ✅ عندما يكتب المستخدم في حقل كلمة السر
+const handlePasswordInput = () => {
+  passwordTouched.value = true
+  clearError('password')
+}
+
+// ✅ كلاس CSS لكل شرط (أخضر = ok ، أحمر = bad)
+const passwordClass = (ok) => {
+  
+  const shouldHighlight = passwordTouched.value || !!errors.value.password
+
+  if (!shouldHighlight) return ''
+  return ok ? 'ok' : 'bad'
+}
+
 
 // Helpers for Date
 const startYear = 2008;
@@ -78,6 +102,13 @@ const handleBlur = (field) => {
   if (field === 'password') {
     if (!password.value) {
       errors.value.password = 'Şifre gereklidir'
+    } else if (
+      !hasUpper.value ||
+      !hasLower.value ||
+      !hasNumber.value ||
+      !hasLength.value
+    ) {
+      errors.value.password = 'Şifre koşullarını kontrol ediniz'
     }
   }
 }
@@ -269,7 +300,10 @@ const handleRegister = async () => {
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               class="custom-input"
+              :class="{ 'has-error': errors.password }"
               placeholder=" "
+              @input="handlePasswordInput"
+              @blur="handleBlur('password')"
             />
             <label class="floating-label">ŞİFRE*</label>
 
@@ -280,12 +314,44 @@ const handleRegister = async () => {
             </button>
           </div>
 
-        <div class="password-rules" :class="{ 'has-error': errors.password }">
-          <div class="rule-item"><span class="check-circle"><svg width="8" height="8" viewBox="0 0 16 14"><path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"></path></svg></span> En az bir büyük harf</div>
-          <div class="rule-item"><span class="check-circle"><svg width="8" height="8" viewBox="0 0 16 14"><path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"></path></svg></span> En az bir küçük harf</div>
-          <div class="rule-item"><span class="check-circle"><svg width="8" height="8" viewBox="0 0 16 14"><path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"></path></svg></span> En az bir rakam</div>
-          <div class="rule-item"><span class="check-circle"><svg width="8" height="8" viewBox="0 0 16 14"><path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"></path></svg></span> 8-15 arası karakter</div>
-        </div>
+        <div class="password-rules">
+  <div class="rule-item" :class="passwordClass(hasUpper)">
+    <span class="check-circle" :class="passwordClass(hasUpper)">
+      <svg width="8" height="8" viewBox="0 0 16 14">
+        <path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"/>
+      </svg>
+    </span>
+    En az bir büyük harf
+  </div>
+
+  <div class="rule-item" :class="passwordClass(hasLower)">
+    <span class="check-circle" :class="passwordClass(hasLower)">
+      <svg width="8" height="8" viewBox="0 0 16 14">
+        <path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"/>
+      </svg>
+    </span>
+    En az bir küçük harf
+  </div>
+
+  <div class="rule-item" :class="passwordClass(hasNumber)">
+    <span class="check-circle" :class="passwordClass(hasNumber)">
+      <svg width="8" height="8" viewBox="0 0 16 14">
+        <path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"/>
+      </svg>
+    </span>
+    En az bir rakam
+  </div>
+
+  <div class="rule-item" :class="passwordClass(hasLength)">
+    <span class="check-circle" :class="passwordClass(hasLength)">
+      <svg width="8" height="8" viewBox="0 0 16 14">
+        <path fill="currentColor" d="m1.479 6.894 3.676 4.264L14.521.294a.78.78 0 0 1 1.226 0 1.12 1.12 0 0 1 0 1.422L5.156 14 .254 8.316a1.12 1.12 0 0 1 0-1.422.78.78 0 0 1 1.226 0z"/>
+      </svg>
+    </span>
+    8-15 arası karakter
+  </div>
+</div>
+
 
         <div class="form-row date-row">
             <div class="form-group third-width">
@@ -569,14 +635,14 @@ const handleRegister = async () => {
   font-size: 18px;
   color: #22242a;
   pointer-events: none;
-  transition: 0.2s ease all;
+  transition: 0.4s ease all;
   text-transform: uppercase;
   font-weight: 400;
 }
 .custom-input:focus ~ .floating-label,
 .custom-input:not(:placeholder-shown) ~ .floating-label {
-  top: -8px;
-  font-size: 14px;
+  top: 4px;
+  font-size: 13px;
   font-weight: 500;
   color: #908e97;
 }
@@ -616,7 +682,6 @@ const handleRegister = async () => {
 
 .eye-btn svg {
   width: 20px;       
-  height: auto;      
   display: block;
 }
 
@@ -637,12 +702,22 @@ const handleRegister = async () => {
     gap: 4px;
 }
 /* Error styling for password rules */
-.password-rules.has-error .rule-item {
-    color: #ff3b3b;
+/* ✅ عندما يكون الشرط صحيح */
+.rule-item.ok {
+  color: #00a651;           /* أخضر */
 }
-.password-rules.has-error .check-circle {
-    background-color: #ff3b3b;
+.check-circle.ok {
+  background-color: #00a651;
 }
+
+/* ❌ عندما يكون الشرط غير محقق */
+.rule-item.bad {
+  color: #ff3b3b;           /* أحمر */
+}
+.check-circle.bad {
+  background-color: #ff3b3b;
+}
+
 
 .check-circle {
     width: 20px;

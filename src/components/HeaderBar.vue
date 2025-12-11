@@ -284,7 +284,8 @@ const handleLogout = async () => {
 .df-middle {
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 170px; 
 }
 
 .df-search-wrap {
@@ -318,7 +319,7 @@ const handleLogout = async () => {
   border: none;
   background: transparent;
   outline: none;
-  font-size: 13px;
+  font-size: 11.6px;
   color: #444;
 }
 

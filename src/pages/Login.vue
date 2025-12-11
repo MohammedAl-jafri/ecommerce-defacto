@@ -40,20 +40,82 @@ const formatPhoneNumber = (event) => {
   phoneNumber.value = formatted
 }
 
+// ✅ أخطاء الحقول (مثل Register)
+const errors = ref({})
+
+const clearError = (field) => {
+  if (errors.value[field]) {
+    delete errors.value[field]
+  }
+}
+
+// ✅ التحقق عند مغادرة الحقل
+const handleBlur = (field) => {
+  if (field === 'email') {
+    if (!email.value) {
+      errors.value.email = 'Lütfen e-posta adresinizi giriniz.'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.toLowerCase())) {
+      errors.value.email = 'Lütfen geçerli bir E-posta adresi giriniz.'
+    }
+  }
+
+  if (field === 'password') {
+    if (!password.value) {
+      // نفس النص تقريبًا الموجود في الموقع الأصلي
+      errors.value.password =
+        'Şifreniz 8-15 karakter aralığında olmalı, rakam, büyük ve küçük harf içermelidir.'
+    }
+  }
+
+   // ✅ PHONE NUMBER (telefon ile giriş)
+  if (field === 'phoneNumber') {
+    const digits = phoneNumber.value.replace(/\D/g, '')
+    if (!digits) {
+      errors.value.phoneNumber = 'Bu alan zorunludur'
+    } else if (digits.length < 10) {
+      errors.value.phoneNumber = 'Lütfen geçerli bir telefon numarası giriniz.'
+    }
+  }
+
+  // ✅ PHONE PASSWORD (telefon şifresi)
+  if (field === 'phonePassword') {
+    if (!phonePassword.value) {
+      errors.value.phonePassword =
+        'Şifreniz 8-15 karakter aralığında olmalı, rakam, büyük ve küçük harf içermelidir.'
+    }
+  }
+}
 
 const loading = ref(false)
 const error = ref('')
 
+const validateLogin = () => {
+  errors.value = {}
+
+  if (loginMode.value === 'email') {
+    handleBlur('email')
+    handleBlur('password')
+  } else {
+    // telefon
+    handleBlur('phoneNumber')
+    handleBlur('phonePassword')
+  }
+
+  return Object.keys(errors.value).length === 0
+}
+
 const handleLogin = async () => {
   error.value = ''
 
-  if (loginMode.value === 'phone') {
-    error.value = 'Telefon ile giriş bu projede sadece arayüz (demo). Lütfen e-posta ile giriş yapın.'
+  // فقط تحقق الحقول + ستايل، بدون Firebase في وضع التلفون
+  if (!validateLogin()) {
     return
   }
 
-  if (!email.value || !password.value) {
-    error.value = 'E-posta ve şifre zorunlu.'
+  if (loginMode.value === 'phone') {
+    // demo فقط مثل ما تحب
+    error.value =
+      'Telefon ile giriş bu projede sadece arayüz (demo). Lütfen e-posta ile giriş yapın.'
     return
   }
 
@@ -107,29 +169,59 @@ const handleLogin = async () => {
 
         <template v-if="loginMode === 'email'">
           <div class="form-group">
-            <input
-              v-model="email"
-              type="email"
-              class="custom-input"
-              placeholder=" "
-            />
-            <label class="floating-label">E-POSTA ADRESİNİZ</label>
-          </div>
+  <input
+    v-model="email"
+    type="email"
+    class="custom-input"
+    :class="{ 'has-error': errors.email }"
+    placeholder=" "
+    @input="clearError('email')"
+    @blur="handleBlur('email')"
+  />
+  <label class="floating-label">E-POSTA ADRESİNİZ</label>
 
-          <div class="form-group password-group">
-            <input
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              class="custom-input"
-              placeholder=" "
-            />
-            <label class="floating-label">ŞİFRE</label>
+  <div v-if="errors.email" class="input-error-msg">
+    <svg width="15" height="15" viewBox="0 0 20 20">
+      <path
+        fill="currentColor"
+        d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
+      />
+    </svg>
+    {{ errors.email }}
+  </div>
+</div>
 
-            <button type="button" class="eye-btn" @click="showPassword = !showPassword">
+
+<div class="form-group password-group">
+  <input
+    v-model="password"
+    :type="showPassword ? 'text' : 'password'"
+    class="custom-input"
+    :class="{ 'has-error': errors.password }"
+    placeholder=" "
+    @input="clearError('password')"
+    @blur="handleBlur('password')"
+  />
+  <label class="floating-label">ŞİFRE</label>
+
+  <button
+    type="button"
+    class="eye-btn"
+    @click="showPassword = !showPassword"
+  >
                 <svg v-if="!showPassword" width="24" height="18" viewBox="0 0 24 12"><path fill="#22242A" fill-rule="evenodd" d="M12 3c-1.645 0-2.978 1.343-2.978 3S10.355 9 12 9s2.978-1.343 2.978-3S13.645 3 12 3M9.767 6c0-1.243 1-2.25 2.233-2.25A2.24 2.24 0 0 1 14.233 6c0 1.243-1 2.25-2.233 2.25A2.24 2.24 0 0 1 9.767 6" clip-rule="evenodd"></path><path fill="currentColor" fill-rule="evenodd" d="M12 0C8.18 0 5.222 1.444 3.223 2.882c-1 .72-1.761 1.439-2.274 1.98a13 13 0 0 0-.733.845l-.04.05-.01.015-.003.004-.001.001.3.221-.3-.22-.162.22.161.22.3-.22-.3.22.002.002.003.004.01.014a5 5 0 0 0 .19.237c.131.16.326.384.583.657.513.541 1.274 1.26 2.274 1.98C5.222 10.556 8.18 12 12 12c3.82 0 6.778-1.444 8.777-2.882 1-.72 1.761-1.439 2.274-1.98a13 13 0 0 0 .733-.845l.04-.05.01-.015.004-.005-.3-.223.3.222L24 6l-.161-.222-.3.222.3-.222h-.001l-.004-.006-.01-.014-.04-.051-.15-.188c-.131-.16-.326-.386-.582-.657a16 16 0 0 0-2.275-1.98C18.778 1.444 15.82 0 12 0M1.487 6.62a12 12 0 0 1-.548-.618L.937 6l.002-.002c.121-.148.304-.361.548-.618.487-.514 1.214-1.2 2.169-1.887C5.565 2.119 8.376.75 12 .75c3.625 0 6.435 1.369 8.344 2.743a15.5 15.5 0 0 1 2.17 1.887c.243.257.426.47.547.618l.002.002-.002.002c-.121.148-.304.361-.548.618-.487.514-1.214 1.2-2.169 1.887-1.909 1.374-4.72 2.743-8.344 2.743-3.625 0-6.435-1.369-8.344-2.743a15.5 15.5 0 0 1-2.17-1.887" clip-rule="evenodd"></path></svg>
                 <svg v-else width="24" height="18" viewBox="0 0 24 18"><path fill="currentColor" fill-rule="evenodd" d="M17.445 3.906 20.56.79a.372.372 0 0 0-.527-.527l-3.36 3.361A14.7 14.7 0 0 0 12 2.87c-3.82 0-6.778 1.433-8.777 2.86-1 .714-1.761 1.428-2.274 1.965a13 13 0 0 0-.733.839l-.04.05-.01.015-.003.004-.001.001.3.221-.3-.22-.162.22.161.22.3-.22-.3.22.002.002.003.004.01.014a5 5 0 0 0 .19.237c.131.16.326.384.583.652a16 16 0 0 0 2.274 1.965 15.7 15.7 0 0 0 3.333 1.824l-3.117 3.116a.372.372 0 1 0 .527.527l3.36-3.362c1.374.46 2.935.756 4.674.756 3.82 0 6.778-1.433 8.777-2.86 1-.715 1.761-1.429 2.274-1.966a13 13 0 0 0 .733-.838l.04-.05.01-.015.004-.005-.3-.221.3.22.162-.22-.161-.22-.3.22.3-.22-.005-.006-.01-.014-.04-.051-.15-.186a13 13 0 0 0-.582-.653 16 16 0 0 0-2.275-1.964 15.7 15.7 0 0 0-3.332-1.824m-1.364.31A14 14 0 0 0 12 3.614c-3.625 0-6.435 1.359-8.344 2.722a15.4 15.4 0 0 0-2.17 1.874c-.243.255-.426.466-.547.613l-.002.002.002.002c.121.147.304.358.548.613.487.51 1.214 1.192 2.169 1.874a15 15 0 0 0 3.476 1.853l2.516-2.516a2.978 2.978 0 0 1 4.178-4.178zm-1.729 2.782 2.516-2.516a15 15 0 0 1 3.476 1.853 15.4 15.4 0 0 1 2.17 1.874c.243.255.426.466.547.613l.002.002-.002.002c-.121.147-.304.358-.548.613a15.4 15.4 0 0 1-2.169 1.874c-1.909 1.363-4.72 2.722-8.344 2.722-1.502 0-2.865-.233-4.08-.604l2.254-2.255a2.978 2.978 0 0 0 4.178-4.178m-1.058.006a2.233 2.233 0 0 0-3.114 3.114zm-2.588 3.64L13.82 7.53a2.233 2.233 0 0 1-3.114 3.114" clip-rule="evenodd"></path></svg>
             </button>
-          </div>
+           <div v-if="errors.password" class="input-error-msg">
+    <svg width="15" height="15" viewBox="0 0 20 20">
+      <path
+        fill="currentColor"
+        d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
+      />
+    </svg>
+    {{ errors.password }}
+  </div>
+</div>
         </template>
 
         <template v-else>
@@ -138,30 +230,53 @@ const handleLogin = async () => {
               v-model="phoneNumber"
               type="tel"
               class="custom-input phone-input"
+              :class="{ 'has-error': errors.phoneNumber }"
               :placeholder="isPhoneLoginFocused && !phoneNumber ? '0(___) ___ __ __' : ' '"
               @focus="isPhoneLoginFocused = true"
-              @blur="isPhoneLoginFocused = false"
-              @input="formatPhoneNumber"
+              @blur="() => { isPhoneLoginFocused = false; handleBlur('phoneNumber') }"
+              @input="(e) => { clearError('phoneNumber'); formatPhoneNumber(e) }"
               autocomplete="off"
               maxlength="17"
             />
             <label class="floating-label">TELEFON NUMARANIZ</label>
-          </div>
-          <div class="form-group password-group">
-            <input
-              v-model="phonePassword"
-              :type="showPassword ? 'text' : 'password'"
-              class="custom-input"
-              placeholder=" "
-            />
+    <div v-if="errors.phoneNumber" class="input-error-msg">
+      <svg width="15" height="15" viewBox="0 0 20 20">
+        <path
+          fill="currentColor"
+          d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
+        />
+      </svg>
+      {{ errors.phoneNumber }}
+    </div>
+  </div>
+
+  <div class="form-group password-group">
+    <input
+      v-model="phonePassword"
+      :type="showPassword ? 'text' : 'password'"
+      class="custom-input"
+      :class="{ 'has-error': errors.phonePassword }"
+      placeholder=" "
+      @input="clearError('phonePassword')"
+      @blur="handleBlur('phonePassword')"
+    />
             <label class="floating-label">ŞİFRE</label>
 
             <button type="button" class="eye-btn" @click="showPassword = !showPassword">
                 <svg v-if="!showPassword" width="24" height="18" viewBox="0 0 24 12"><path fill="#22242A" fill-rule="evenodd" d="M12 3c-1.645 0-2.978 1.343-2.978 3S10.355 9 12 9s2.978-1.343 2.978-3S13.645 3 12 3M9.767 6c0-1.243 1-2.25 2.233-2.25A2.24 2.24 0 0 1 14.233 6c0 1.243-1 2.25-2.233 2.25A2.24 2.24 0 0 1 9.767 6" clip-rule="evenodd"></path><path fill="currentColor" fill-rule="evenodd" d="M12 0C8.18 0 5.222 1.444 3.223 2.882c-1 .72-1.761 1.439-2.274 1.98a13 13 0 0 0-.733.845l-.04.05-.01.015-.003.004-.001.001.3.221-.3-.22-.162.22.161.22.3-.22-.3.22.002.002.003.004.01.014a5 5 0 0 0 .19.237c.131.16.326.384.583.657.513.541 1.274 1.26 2.274 1.98C5.222 10.556 8.18 12 12 12c3.82 0 6.778-1.444 8.777-2.882 1-.72 1.761-1.439 2.274-1.98a13 13 0 0 0 .733-.845l.04-.05.01-.015.004-.005-.3-.223.3.222L24 6l-.161-.222-.3.222.3-.222h-.001l-.004-.006-.01-.014-.04-.051-.15-.188c-.131-.16-.326-.386-.582-.657a16 16 0 0 0-2.275-1.98C18.778 1.444 15.82 0 12 0M1.487 6.62a12 12 0 0 1-.548-.618L.937 6l.002-.002c.121-.148.304-.361.548-.618.487-.514 1.214-1.2 2.169-1.887C5.565 2.119 8.376.75 12 .75c3.625 0 6.435 1.369 8.344 2.743a15.5 15.5 0 0 1 2.17 1.887c.243.257.426.47.547.618l.002.002-.002.002c-.121.148-.304.361-.548.618-.487.514-1.214 1.2-2.169 1.887-1.909 1.374-4.72 2.743-8.344 2.743-3.625 0-6.435-1.369-8.344-2.743a15.5 15.5 0 0 1-2.17-1.887" clip-rule="evenodd"></path></svg>
                 <svg v-else width="24" height="18" viewBox="0 0 24 18"><path fill="currentColor" fill-rule="evenodd" d="M17.445 3.906 20.56.79a.372.372 0 0 0-.527-.527l-3.36 3.361A14.7 14.7 0 0 0 12 2.87c-3.82 0-6.778 1.433-8.777 2.86-1 .714-1.761 1.428-2.274 1.965a13 13 0 0 0-.733.839l-.04.05-.01.015-.003.004-.001.001.3.221-.3-.22-.162.22.161.22.3-.22-.3.22.002.002.003.004.01.014a5 5 0 0 0 .19.237c.131.16.326.384.583.652a16 16 0 0 0 2.274 1.965 15.7 15.7 0 0 0 3.333 1.824l-3.117 3.116a.372.372 0 1 0 .527.527l3.36-3.362c1.374.46 2.935.756 4.674.756 3.82 0 6.778-1.433 8.777-2.86 1-.715 1.761-1.429 2.274-1.966a13 13 0 0 0 .733-.838l.04-.05.01-.015.004-.005-.3-.221.3.22.162-.22-.161-.22-.3.22.3-.22-.005-.006-.01-.014-.04-.051-.15-.186a13 13 0 0 0-.582-.653 16 16 0 0 0-2.275-1.964 15.7 15.7 0 0 0-3.332-1.824m-1.364.31A14 14 0 0 0 12 3.614c-3.625 0-6.435 1.359-8.344 2.722a15.4 15.4 0 0 0-2.17 1.874c-.243.255-.426.466-.547.613l-.002.002.002.002c.121.147.304.358.548.613.487.51 1.214 1.192 2.169 1.874a15 15 0 0 0 3.476 1.853l2.516-2.516a2.978 2.978 0 0 1 4.178-4.178zm-1.729 2.782 2.516-2.516a15 15 0 0 1 3.476 1.853 15.4 15.4 0 0 1 2.17 1.874c.243.255.426.466.547.613l.002.002-.002.002c-.121.147-.304.358-.548.613a15.4 15.4 0 0 1-2.169 1.874c-1.909 1.363-4.72 2.722-8.344 2.722-1.502 0-2.865-.233-4.08-.604l2.254-2.255a2.978 2.978 0 0 0 4.178-4.178m-1.058.006a2.233 2.233 0 0 0-3.114 3.114zm-2.588 3.64L13.82 7.53a2.233 2.233 0 0 1-3.114 3.114" clip-rule="evenodd"></path></svg>
             </button>
-          </div>
-        </template>
+           <div v-if="errors.phonePassword" class="input-error-msg">
+      <svg width="15" height="15" viewBox="0 0 20 20">
+        <path
+          fill="currentColor"
+          d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"
+        />
+      </svg>
+      {{ errors.phonePassword }}
+    </div>
+  </div>
+</template>
 
         <div class="remember-row">
           <label class="checkbox">
@@ -345,6 +460,22 @@ const handleLogin = async () => {
   font-weight: 400;
 }
 
+/* نفس ستايل الأخطاء في صفحة التسجيل */
+.custom-input.has-error {
+  border-bottom-color: #ff3b3b !important;
+}
+
+.input-error-msg {
+  color: #ff3b3b;
+  font-size: 10px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+}
+
+
 /* Form Fields */
 .auth-form {
   display: flex;
@@ -392,8 +523,8 @@ const handleLogin = async () => {
 .eye-btn {
   position: absolute;
   right: 0;
-  top: 60%;
-  transform: translateY(-50%);
+  top: 0;
+  height: 40px;
   background: none;
   border: none;
   padding: 0;
