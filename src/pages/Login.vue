@@ -255,7 +255,7 @@ const handleLogin = async () => {
 /* --- RIGHT: FORM PANEL --- */
 .auth-panel {
   flex: 1;
-  max-width: 600px; /* Prevent it from getting too wide */
+  max-width: 600px;
   background: #ffffff;
   padding: 40px 60px;
   display: flex;
@@ -265,7 +265,6 @@ const handleLogin = async () => {
 /* Tabs */
 .auth-tabs {
   display: flex;
-  /* خط رمادي فاتح كامل في الأسفل */
   border-bottom: 1px solid #e9e8ea;
   margin-bottom: 24px;
   position: relative;
@@ -278,42 +277,44 @@ const handleLogin = async () => {
   padding: 6px 0;
   font-size: 18px;
   text-decoration: none;
-  color: #22242a; /* لون رمادي للنص غير النشط */
+  color: #22242a; 
   font-weight: 400;
-  position: relative; /* ضروري لتموضع الخط المتحرك */
-  transition: color 0.3s ease; /* تنعيم تغير لون النص */
+  position: relative; 
+  transition: color 0.3s ease;
 }
 
 /* العنصر الزائف الذي سيشكل الخط الأسود */
 .tab::after {
   content: '';
   position: absolute;
-  bottom: -1px; /* ليغطي الخط الرمادي */
+  bottom: -1px; 
   left: 0;
-  width: 0%; /* البداية: العرض صفر (مخفي) */
-  height: 1px; /* سماكة الخط */
-  background-color: #22242a; /* لون الخط (أسود) */
-  transition: width 0.3s ease; /* حركة التمدد */
+  width: 0%;
+  height: 1px; 
+  background-color: #22242a; 
+  transition: width 0.3s ease;
 }
 
-/* عند مرور الماوس (Hover) */
 .tab:hover {
-  color: #22242a; /* يتحول النص للأسود */
-}
-.tab:hover::after {
-  width: 100%; /* يتمدد الخط ليملأ العرض */
-}
-
-/* الحالة النشطة (Active) */
-.tab.active,
-.tab.router-link-active {
-  color: #22242a;
+  color: #585562;
   font-weight: 700;
 }
-/* الخط يبقى ظاهراً دائماً للعنصر النشط */
+.tab:hover::after {
+  width: 100%;
+}
+.tab.active,
+.tab.router-link-active {
+  color: #000000;
+  font-weight: 700;
+}
 .tab.active::after,
 .tab.router-link-active::after {
   width: 100%;
+}
+
+.tab.active:hover,
+.tab.router-link-active:hover {
+  color: #585562; 
 }
 
 /* Login Method Radios */
@@ -333,7 +334,7 @@ const handleLogin = async () => {
 }
 
 .radio input {
-  accent-color: #000; /* Make radio black */
+  accent-color: #000; 
   width: 17px;
   height: 13px;
   cursor: pointer;
@@ -361,7 +362,7 @@ const handleLogin = async () => {
   width: 100%;
   height: 40px;
   border: none;
-  border-bottom: 1px solid #000000; /* خط رمادي فقط */
+  border-bottom: 1px solid #000000; 
   border-radius: 0;
   font-size: 18px;
   color: #22242a;
@@ -378,7 +379,6 @@ const handleLogin = async () => {
   text-transform: uppercase;
 }
 
-/* ✅ تعديل لإظهار الـ Placeholder الرمادي عند الضغط */
 .phone-input:focus::placeholder {
   color: #000000;
   font-weight: 400;
@@ -445,62 +445,57 @@ const handleLogin = async () => {
   color: #22242a;
 }
 
-/* =========================================
-   إضافة تأثير النص العائم (Floating Label)
-   ========================================= */
 
-/* 1. تنسيق النص المتحرك (Label) */
 .floating-label {
   position: absolute;
   left: 0;
-  top: 6px; /* مكان النص الابتدائي (وسط الحقل) */
-  font-size: 17px; /* نفس حجم خطك الأصلي */
+  top: 6px; 
+  font-size: 17px;
   font-weight: 400;
-  color: #000000; /* لون النص وهو في الوسط */
-  pointer-events: none; /* يسمح بالضغط على الحقل من خلال النص */
-  transition: 0.2s ease all; /* سرعة الحركة */
+  color: #000000; 
+  pointer-events: none; 
+  transition: 0.2s ease all; 
   text-transform: uppercase;
 }
 
-/* 2. تعديل الحقل لترك مساحة للنص عندما يصعد */
 .custom-input {
-  padding-top: 15px; /* إنزال النص المكتوب قليلاً للأسفل */
+  padding-top: 15px; 
 }
 
-/* 3. إلغاء الـ placeholder الافتراضي */
 .custom-input::placeholder {
   color: transparent;
 }
 
-/* 4. الحركة السحرية: عند الضغط أو وجود نص */
 .custom-input:focus ~ .floating-label,
 .custom-input:not(:placeholder-shown) ~ .floating-label {
-  top: -8px;       /* يرتفع للأعلى */
-  font-size: 11px;  /* يصغر حجم الخط */
-  color: #908e97;   /* يتغير لونه للرمادي */
+  top: -8px;      
+  font-size: 11px;  
+  color: #908e97;   
 }
 
 /* Buttons */
 .primary-btn {
-  margin-top: 10px;
-  background: #1f1f1f; /* Almost black */
+  margin-top: 20px;
+  background: #22242a;
   color: #ffffff;
-  border: none;
+  border: 1px solid #22242a;
   height: 40px;
   font-weight: 600;
   cursor: pointer;
-  font-size: 15px;
-  letter-spacing: 0.05em;
-  transition: opacity 0.2s;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .primary-btn:hover {
-  opacity: 0.9;
+  background: #ffffff;
+  color: #22242a;
+  font-weight: 500;
 }
 
 .primary-btn:disabled {
   opacity: 0.7;
-  cursor: default;
 }
 
 .secondary-btn {
@@ -514,7 +509,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Space between Icon and Text */
+  gap: 10px; 
   letter-spacing: 0.05em;
   transition: background 0.2s;
 }

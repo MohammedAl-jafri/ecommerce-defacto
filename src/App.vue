@@ -1,12 +1,4 @@
-<!--
-  Project: DeFacto E-Commerce (Vue + Firebase)
-  Prepared by: Mohammed Khalid Abdullah Al-Jafri
-  Student No: 210101088
-  Date: 2025-11-24
--->
-
-
-<!-- src/App.vue (مع KeepAlive لـ ComponentsList فقط) -->
+<!-- src/App.vue -->
 <script setup>
 import { computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
@@ -15,19 +7,25 @@ import FooterBar from './components/FooterBar.vue'
 import CartToast from './components/CartToast.vue'
 
 const route = useRoute()
+
+// صفحة الـ components (قائمة الكومبوننت)
 const isComponents = computed(() => route.name === 'components')
+
+// صفحات الدخول/التسجيل
+const isAuth = computed(() => route.name === 'login' || route.name === 'register')
+
+// الصفحات التي نريدها فل سكرين (components + login + register)
+const isFullPage = computed(() => isComponents.value || isAuth.value)
 </script>
 
 <template>
   <div>
     <HeaderBar v-if="!isComponents" />
 
-        <!-- Toast موجود دائماً فوق الصفحة -->
     <CartToast />
 
     <main>
-      <div :class="isComponents ? 'fullpage' : 'container'">
-        <!-- 🔥 هنا السحر -->
+      <div :class="isFullPage ? 'fullpage' : 'container'">
         <RouterView v-slot="{ Component }">
           <KeepAlive include="ComponentsList">
             <component :is="Component" />
@@ -35,7 +33,6 @@ const isComponents = computed(() => route.name === 'components')
         </RouterView>
       </div>
     </main>
-
     <FooterBar v-if="!isComponents" />
   </div>
 </template>
@@ -43,7 +40,8 @@ const isComponents = computed(() => route.name === 'components')
 <style>
 body {
   background: #f5f5f5;
-  font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 .container {
@@ -52,8 +50,8 @@ body {
   padding: 0 1rem 2rem;
 }
 
-/* /components: we want *only* the Components List page */
 .fullpage {
+  width: 100%;
   min-height: 100vh;
   padding: 0;
 }
