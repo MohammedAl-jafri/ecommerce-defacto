@@ -8,29 +8,42 @@ import CartToast from './components/CartToast.vue'
 
 const route = useRoute()
 
-// صفحة الـ components (قائمة الكومبوننت)
+// صفحة components
 const isComponents = computed(() => route.name === 'components')
 
-// صفحات الدخول/التسجيل
-const isAuth = computed(() => route.name === 'login' || route.name === 'register')
+// صفحات الدخول / التسجيل
+const isAuth = computed(
+  () => route.name === 'login' || route.name === 'register'
+)
 
-// صفحة السلة (بناءً على الاسم أو المسار)
+// صفحة السلة
 const isCart = computed(
   () => route.name === 'cart' || route.path === '/cart'
 )
 
-// الصفحات التي نريدها فل سكرين (components + login + register + cart)
-const isFullPage = computed(() => isComponents.value || isAuth.value || isCart.value)
+// صفحة الدفع
+const isCheckout = computed(
+  () => route.name === 'checkout' || route.path === '/checkout'
+)
+
+// كل الصفحات اللي نبيها Full Page
+const isFullPage = computed(
+  () =>
+    isComponents.value ||
+    isAuth.value ||
+    isCart.value ||
+    isCheckout.value
+)
 </script>
 
 <template>
   <div>
-    <!-- الهيدر يظهر في كل الصفحات ما عدا صفحة components فقط -->
+    <!-- الهيدر مخفي فقط في صفحة components -->
     <HeaderBar v-if="!isComponents" />
 
     <CartToast />
 
-    <main>
+    <main :class="['app-main', { 'app-main--full': isFullPage }]">
       <div :class="isFullPage ? 'fullpage' : 'container'">
         <RouterView v-slot="{ Component }">
           <KeepAlive include="ComponentsList">
@@ -40,7 +53,7 @@ const isFullPage = computed(() => isComponents.value || isAuth.value || isCart.v
       </div>
     </main>
 
-    <!-- الفوتر أيضاً مخفي فقط في صفحة components -->
+    <!-- الفوتر مخفي فقط في صفحة components -->
     <FooterBar v-if="!isComponents" />
   </div>
 </template>
@@ -52,15 +65,27 @@ body {
     "Segoe UI", sans-serif;
 }
 
+/* الصفحات العادية */
 .container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
 }
 
+/* الصفحات fullpage */
 .fullpage {
   width: 100%;
   min-height: 100vh;
   padding: 0;
+}
+
+/* main الافتراضي */
+.app-main {
+  background: transparent;
+}
+
+/* main لما تكون الصفحة fullpage */
+.app-main--full {
+  background: #ffffff;
 }
 </style>

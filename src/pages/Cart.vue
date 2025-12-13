@@ -1,15 +1,40 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCart } from '../stores/useCart'
 
 const { items, total, updateQty, removeFromCart } = useCart()
 
-// صورة احتياطية
+// --- حالة النافذة المنبثقة (Modal State) ---
+const showModal = ref(false)
+const itemToDelete = ref(null)
+
+// فتح النافذة
+const openDeleteModal = (item) => {
+  itemToDelete.value = item
+  showModal.value = true
+}
+
+// إغلاق النافذة
+const closeModal = () => {
+  showModal.value = false
+  itemToDelete.value = null
+}
+
+// تنفيذ الحذف
+const confirmDelete = (addToFavorites) => {
+  if (itemToDelete.value) {
+    if (addToFavorites) {
+      console.log(`تمت إضافة المنتج ${itemToDelete.value.id} للمفضلة`)
+    }
+    removeFromCart(itemToDelete.value.id)
+  }
+  closeModal()
+}
+
+// --- البيانات الأساسية ---
 const fallback = 'https://via.placeholder.com/120x160.png?text=No+image'
 const hasItems = computed(() => items.value.length > 0)
-
-// حسابات المجموع
 const shippingCost = computed(() => (total.value > 500 ? 0 : 29.99))
 const discount = computed(() => 0)
 const grandTotal = computed(() => total.value + shippingCost.value - discount.value)
@@ -27,8 +52,16 @@ const increaseQty = (item) => {
   updateQty(item.id, (item.qty || 1) + 1)
 }
 
+const decreaseQty = (item) => {
+  if (item.qty > 1) {
+    updateQty(item.id, item.qty - 1)
+  } else {
+    openDeleteModal(item)
+  }
+}
+
 const removeLine = (item) => {
-  removeFromCart(item.id)
+  openDeleteModal(item)
 }
 </script>
 
@@ -50,19 +83,18 @@ const removeLine = (item) => {
     </div>
 
     <div v-else class="container shopping__container">
-      
       <div class="shopping-left">
         <div class="shopping__header">
            <div class="shopping__header--title">
              <span class="back-arrow">
-               <svg viewBox="0 0 20 16" width="18" height="14">
+               <svg viewBox="0 0 20 16" width="16" height="10">
                  <path fill="currentColor" d="M8.139 0a.698.686 0 0 0-.494.202L.205 7.515H.203a.698.686 0 0 0-.15.223.698.686 0 0 0-.053.261.698.686 0 0 0 .053.263.698.686 0 0 0 .15.223h.002l7.439 7.314a.698.686 0 0 0 .988 0 .698.686 0 0 0 0-.969L2.379 8.684h16.922A.698.686 0 0 0 20 7.999a.698.686 0 0 0-.699-.685H2.383l6.25-6.143a.698.686 0 0 0 0-.969A.698.686 0 0 0 8.139 0"></path>
                </svg>
              </span> 
              <span>SEPETİM ({{ items.length }} ÜRÜN)</span>
            </div>
-           <button class="shopping__header--favorite">
-             <svg viewBox="0 0 20 18" width="18" height="16" style="margin-right:5px;">
+           <button class="shopping__header--favorite glow-effect">
+             <svg viewBox="0 0 20 18" width="19" height="18" style="margin-right:5px;">
                <path fill="currentColor" d="M5.197 0a5.06 5.06 0 0 0-3.69 1.6c-2.009 2.13-2.007 5.497 0 7.629l8.101 8.606a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l8.109-8.599c2.009-2.13 2.009-5.498 0-7.629a5.06 5.06 0 0 0-7.381 0L10 2.785 8.887 1.6A5.06 5.06 0 0 0 5.197 0m0 .911c1.047 0 2.096.436 2.922 1.311l1.497 1.592a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l1.489-1.585c1.651-1.751 4.185-1.75 5.836 0s1.651 4.635 0 6.385L10 16.798 2.283 8.606a4.74 4.74 0 0 1 0-6.385C3.108 1.347 4.15.911 5.196.911z"></path>
              </svg>
              <span>FAVORİLERİM</span>
@@ -75,61 +107,67 @@ const removeLine = (item) => {
         </div>
 
         <div class="shopping-list">
-          <div v-for="item in items" :key="item.id" class="shopping__card--item">
+          <div class="shopping-list-container">
+           <div v-for="item in items" :key="item.id" class="shopping__card--item">
             <div class="shopping-product-card">
-                
                 <div class="item-select">
                     <div class="custom-checkbox custom-checkbox--black">
                         <input :id="'chk-' + item.id" type="checkbox" checked>
                         <label :for="'chk-' + item.id"></label>
                     </div>
                 </div>
-
                 <div class="shopping-product-card__image">
                   <img :src="getImage(item)" :alt="item.title" />
                 </div>
-
                 <div class="shopping-product-card__info">
-                  <div class="shopping-product-card__info--title">
-                    <h3 class="product-title">{{ item.title }}</h3>
+                  <div class="shopping-product-card__info--title-block">
+                    <h3 class="product-title interactive-text">{{ item.title }}</h3>
                     <div class="item-price-block">
                        <span class="shopping-product-card__info--price-new">{{ item.price }} TL</span>
                     </div>
                   </div>
-
                   <div class="shopping-product-card__info--size">
                     <span>BEJ / 2/3 YAŞ (98CM)</span> 
                     <button class="edit-btn">
-                      <svg viewBox="0 0 19 17.723" width="14" height="14">
+                      <svg viewBox="0 0 19 17.723" width="13" height="13">
                         <path fill="currentColor" d="M13.357 0a2.37 2.37 0 0 0-1.68.693l-9.586 9.584-1.479 5.545 5.545-1.479 9.586-9.586a2.38 2.38 0 0 0 0-3.357l-.707-.707A2.37 2.37 0 0 0 13.357 0m0 .744a1.62 1.62 0 0 1 1.148.479l.707.707a1.62 1.62 0 0 1 0 2.299l-.891.891-3.006-3.004.891-.893a1.62 1.62 0 0 1 1.15-.479zm-2.572 1.9 3.006 3.006-8.021 8.021-4.098 1.094 1.094-4.1zM0 16.723v1h19v-1H.5z"></path>
                       </svg>
                     </button>
                   </div>
-
                   <div class="shopping-product-card__info--controls">
                     <div class="qty-selector">
+                      <div class="control-left-wrapper">
+                         <button v-if="item.qty > 1" class="minus-icon" @click="decreaseQty(item)">
+                           <svg viewBox="0 0 12 12" width="10" height="10">
+                              <path fill="currentColor" d="M0 5.5h12v1H0z"></path>
+                           </svg>
+                         </button>
+                         <button v-else class="delete-icon" @click="openDeleteModal(item)">
+                           <svg viewBox="0 0 22 24" width="12" height="12">
+                             <path fill="currentColor" d="m19.245 8.816-1.059 11.862c-.076.7-.317 1.262-.728 1.645s-.975.576-1.674.59a248 248 0 0 1-9.652-.006c-.667-.015-1.213-.213-1.606-.59-.4-.383-.637-.941-.713-1.629-.391-3.547-1.057-11.872-1.057-11.872a.524.524 0 0 0-1.045.082l1.06 11.903c.106.963.468 1.731 1.029 2.267.569.544 1.346.86 2.31.88 3.229.069 6.463.065 9.693.006.995-.018 1.791-.33 2.372-.87s.945-1.311 1.053-2.291c.39-3.526 1.062-11.894 1.062-11.894a.523.523 0 0 0-1.045-.083M0 4.851c0-.288.235-.522.524-.522h20.952c.289 0 .524.234.524.522s-.235.522-.524.522H.524A.523.523 0 0 1 0 4.851"></path><path fill="currentColor" d="M6.349 1.565A2.11 2.11 0 0 1 8.384 0h5.231c.954 0 1.788.643 2.034 1.565l.007.032.301 1.509a1.515 1.515 0 0 0 1.481 1.223c.289 0 .524.234.524.522s-.235.522-.524.522a2.56 2.56 0 0 1-2.509-2.063l-.296-1.491a1.06 1.06 0 0 0-1.018-.775H8.384a1.06 1.06 0 0 0-1.017.775L7.069 3.31A2.56 2.56 0 0 1 4.56 5.373c-.289 0-.524-.234-.524-.522s.235-.522.524-.522c.717 0 1.34-.509 1.482-1.222l.3-1.51z"></path>
+                           </svg>
+                         </button>
+                      </div>
                       <span class="qty-label">ADET:</span>
                       <strong class="qty-val">{{ item.qty || 1 }}</strong>
                       <div class="qty-buttons">
-                        <button @click="increaseQty(item)">+</button>
+                        <button @click="increaseQty(item)">
+                             <svg viewBox="0 0 12 12" width="10" height="10">
+                                <path fill="currentColor" d="M5.5 0v5.5H0v1h5.5V12h1V6.5H12v-1H6.5V0z"></path>
+                             </svg>
+                        </button>
                       </div>
                     </div>
-                    
-                    <button class="delete-icon" @click="removeLine(item)">
-                       <svg viewBox="0 0 22 24" width="16" height="18">
-                         <path fill="currentColor" d="m19.245 8.816-1.059 11.862c-.076.7-.317 1.262-.728 1.645s-.975.576-1.674.59a248 248 0 0 1-9.652-.006c-.667-.015-1.213-.213-1.606-.59-.4-.383-.637-.941-.713-1.629-.391-3.547-1.057-11.872-1.057-11.872a.524.524 0 0 0-1.045.082l1.06 11.903c.106.963.468 1.731 1.029 2.267.569.544 1.346.86 2.31.88 3.229.069 6.463.065 9.693.006.995-.018 1.791-.33 2.372-.87s.945-1.311 1.053-2.291c.39-3.526 1.062-11.894 1.062-11.894a.523.523 0 0 0-1.045-.083M0 4.851c0-.288.235-.522.524-.522h20.952c.289 0 .524.234.524.522s-.235.522-.524.522H.524A.523.523 0 0 1 0 4.851"></path><path fill="currentColor" d="M6.349 1.565A2.11 2.11 0 0 1 8.384 0h5.231c.954 0 1.788.643 2.034 1.565l.007.032.301 1.509a1.515 1.515 0 0 0 1.481 1.223c.289 0 .524.234.524.522s-.235.522-.524.522a2.56 2.56 0 0 1-2.509-2.063l-.296-1.491a1.06 1.06 0 0 0-1.018-.775H8.384a1.06 1.06 0 0 0-1.017.775L7.069 3.31A2.56 2.56 0 0 1 4.56 5.373c-.289 0-.524-.234-.524-.522s.235-.522.524-.522c.717 0 1.34-.509 1.482-1.222l.3-1.51z"></path>
-                       </svg>
-                    </button>
                   </div>
-
                   <div class="delivery-estimate">
                     TAHMİNİ TESLİMAT: 13 ARALIK - 18 ARALIK
-                  </div>
-                </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                  </div>  
+                 </div>  
+             </div> 
+           </div>
+         </div>
+       </div>
+     </div>
 
       <div class="shopping-right">
         <div class="shopping__summary-final">
@@ -147,31 +185,27 @@ const removeLine = (item) => {
                 <span>TOPLAM İNDİRİM</span>
                 <span class="f-bold">-{{ discount }} TL</span>
               </div>
-              
               <div class="shopping__summary-final--item totalAmount">
-                 <span class="title">TOPLAM</span>
-                 <span class="amount">{{ grandTotal.toFixed(2) }} TL</span>
+                  <span class="title">TOPLAM</span>
+                  <span class="amount">{{ grandTotal.toFixed(2) }} TL</span>
               </div>
-
-              <RouterLink to="/checkout" class="button button--fluid button--big button--black mt-3">
+              <RouterLink to="/checkout" class="button button--fluid button--big button--black mt-2">
                 ALIŞVERİŞİ TAMAMLA
               </RouterLink>
           </div>
         </div>
-
         <div class="shopping__coupon">
           <div class="coupon-header">
             <span>İNDİRİM KODUNUZ</span>
             <button class="btn-link">KULLAN</button>
           </div>
         </div>
-
         <div class="gift-package">
             <div class="custom-checkbox custom-checkbox--black">
                 <input id="gift-opt" type="checkbox">
                 <label for="gift-opt">
                   <span class="gift-icon-wrapper">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" viewBox="0 0 16 18" fill="none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 18" fill="none">
                       <path d="M7.60282 9.42631L0 5.00848L0.0238183 13.5821L7.62664 18L7.60282 9.42631Z" fill="#FDA623"/>
                       <path d="M15.0637 5.1238L7.46086 0.705017L0 5.01233L7.60282 9.43111L15.0637 5.1238Z" fill="#FFCE1F"/>
                       <path d="M7.60278 9.42633L7.6266 18L15.0884 13.6927L15.0636 5.11902L7.60278 9.42633Z" fill="#FDA623"/>
@@ -192,28 +226,50 @@ const removeLine = (item) => {
                       <path d="M10.4477 5.60589C9.5845 5.64496 8.5384 5.48204 7.49896 4.88563C7.49896 4.88563 9.59784 4.83418 11.0412 4.1263C11.589 3.85858 12.0426 3.49559 12.2512 3.00684C12.2512 3.00684 12.2493 4.54741 12.4703 4.86371C12.6018 5.05236 11.7243 5.54873 10.4477 5.60589Z" fill="#5848BC"/>
                       <path opacity="0.9" d="M10.4477 5.60589C10.664 5.13905 10.8774 4.62363 11.0412 4.1263C11.5891 3.85858 12.0426 3.49559 12.2512 3.00684C12.2512 3.00684 12.2493 4.54741 12.4703 4.86371C12.6018 5.05236 11.7244 5.54873 10.4477 5.60589Z" fill="#403B72"/>
                       <path d="M12.4703 4.86369C12.2312 4.70172 11.9835 4.57787 11.731 4.48355C10.6173 4.07006 9.41684 4.25013 8.57938 4.48545C8.03823 4.63884 7.67047 4.8332 7.55615 4.88751C7.53423 4.89799 7.52661 4.9037 7.52661 4.9037C7.54186 4.88084 7.54852 4.84749 7.56377 4.82463C8.00012 4.16343 8.49649 3.71278 9.02431 3.42125C9.83699 2.96965 10.6773 2.87628 11.2966 2.88962C11.8692 2.90296 12.2522 3.00681 12.2522 3.00681L12.4713 4.86369H12.4703Z" fill="#8B44FF"/>
-                      <path d="M3.93573 5.80597C3.94621 6.24423 5.84692 6.23661 7.54564 4.95709C7.54564 4.95709 4.37494 6.05083 3.95669 4.27112C3.95669 4.27112 3.92525 5.36867 3.93573 5.80597Z" fill="#5848BC"/>
-                      <path d="M7.53514 4.97516C7.53514 4.97516 6.95874 4.6217 6.09652 4.70649C5.73924 4.74079 5.33433 4.8475 4.90369 5.08092C4.5912 5.24955 4.26631 5.48392 3.93476 5.80595L3.89856 4.3092C3.89856 4.3092 4.07577 4.19106 4.37493 4.08436C4.78555 3.93668 5.42579 3.80997 6.14796 4.04053C6.59384 4.18249 7.06164 4.47974 7.53514 4.97612V4.97516Z" fill="#8B44FF"/>
-                      <path d="M6.10793 4.02814L6.06125 4.71221C5.70398 4.7465 5.29906 4.85321 4.86843 5.08663L4.33966 4.08912C4.75029 3.94144 5.38576 3.79758 6.10698 4.02814H6.10793Z" fill="#8B44FF"/>
-                      <path d="M12.4703 4.86371C12.2312 4.70175 11.9835 4.57789 11.731 4.48357L11.2956 2.88965C11.8682 2.90299 12.2512 3.00683 12.2512 3.00683L12.4703 4.86371Z" fill="#8B44FF"/>
                     </svg>
                   </span>
-                  Özel Hediye Paketi İstiyorum
+                  <span class="gift-text">Özel Hediye Paketi İstiyorum</span>
                 </label>
             </div>
         </div>
       </div>
-
     </div>
+
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div id="productDeleteModal" class="modal-container">
+        <div class="modal__header">
+          <span class="modal__title">ÜRÜN SİL</span>
+          <button class="modal__close" @click="closeModal">
+            <svg viewBox="0 0 16 16" width="16" height="16">
+               <path fill="currentColor" d="M14.53 1.47a.75.75 0 0 0-1.06 0L8 6.94 2.53 1.47a.75.75 0 0 0-1.06 1.06L6.94 8l-5.47 5.47a.75.75 0 1 0 1.06 1.06L8 9.06l5.47 5.47a.75.75 0 0 0 1.06-1.06L9.06 8l5.47-5.47a.75.75 0 0 0 0-1.06z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="modal__inner">
+          <span class="modal__text">BU İŞLEMLE ÜRÜN SEPETİNİZDEN KALDIRILACAKTIR.<br>ONAYLIYOR MUSUNUZ?</span>
+          <div class="modal__footer">
+            <button class="btn-modal btn-black" @click="confirmDelete(true)">
+              SİL VE FAVORİLERE EKLE
+            </button>
+            <button class="btn-modal btn-white" @click="confirmDelete(false)">
+              SİL
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </section>
 </template>
 
 <style scoped>
+/* استيراد الخطوط لضمان التطابق 100% مع الصورة */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700&family=Mulish:wght@400;500;600;700;800&display=swap');
 
 .shopping-cart-page {
     background-color: #fff;
-    padding-bottom: 50px;
-    font-family: 'Mulish', 'Open Sans', sans-serif;
+    padding-bottom: 0px;
+    font-family: 'Libre Franklin', 'Mulish', 'Open Sans', sans-serif;
     color: #22242a;
 }
 
@@ -233,8 +289,7 @@ const removeLine = (item) => {
     transition: all 0.3s ease;
 }
 .button--big {
-    height: 56px;
-    padding: 0 130px;
+    height: 40px;
     font-size: 14px;
 }
 .button--fluid {
@@ -282,12 +337,11 @@ const removeLine = (item) => {
     vertical-align: middle;
 }
 
-/* المربع الفارغ (قبل التحديد) */
 .custom-checkbox label:before {
     content: "";
     background: #f8f8f9;
     border: 1px solid #c7c6cb;
-    width: 12px;  /* الحجم الصغير الأصلي */
+    width: 12px;
     height: 12px;
     position: absolute;
     left: 0;
@@ -298,24 +352,17 @@ const removeLine = (item) => {
     vertical-align: middle;
 }
 
-/* تأثير عند التحديد: تغيير حدود المربع الخلفي */
 .custom-checkbox input:checked ~ label:before {
     border: 1px solid #908e97;
 }
 
-/* المربع الملون + علامة الصح (عند التحديد) */
 .custom-checkbox input:checked ~ label:after {
     content: "";
-    background-color: #161c2b; /* اللون الكحلي/الأسود الخاص بديفاكتو */
-    
-    /* رابط SVG لعلامة الصح البيضاء */
+    background-color: #161c2b;
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 18'%3E%3Cpath d='M7 11.25l-4-4.5-3 3.376L7 18 20 3.374 17 0z' fill='%23fff'/%3E%3C/svg%3E");
-    
     background-repeat: no-repeat;
     background-position: 50%;
     background-size: 10px 10px;
-    
-    /* التموضع ليغطي المربع الأصلي تماماً */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -327,13 +374,15 @@ const removeLine = (item) => {
     border-radius: 0;
     border-color: #161c2b;
 }
+
 .gift-icon-wrapper {
   display: inline-flex;
   margin-right: 5px;
+  vertical-align: middle;
 }
 
 .container.shopping__container {
-    max-width: 1350px;
+    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
     padding: 20px 15px;
@@ -350,6 +399,7 @@ const removeLine = (item) => {
 .shopping-right {
     width: 350px;
     flex-shrink: 0;
+    margin-top: 100px; 
 }
 
 /* --- Empty State --- */
@@ -396,29 +446,38 @@ const removeLine = (item) => {
 }
 
 .shopping__header--favorite {
-    background: #f4f4f5;
+    background: #F4F4F5; 
     border: none;
-    padding: 0 15px;
+    padding: 0 4px;
     height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14.5px;
     font-weight: 500;
     cursor: pointer;
     color: #22242a;
+    transition: all 0.3s ease;
+}
+
+.shopping__header--favorite svg {
+    color: #22242a !important; /* إجبار القلب على البقاء أسود */
+    transition: none; /* إلغاء الحركة عن القلب */
+}
+.shopping__header--favorite:hover {
+    color: #585562; 
 }
 
 /* --- Free Shipping Banner --- */
 .free-shipping-banner {
     background-color: #f2f8f2;
     color: #333;
-    padding: 12px 15px;
-    font-size: 13px;
+    padding: 9px 15px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
     border-radius: 4px;
 }
 .circle-progress {
@@ -444,10 +503,33 @@ const removeLine = (item) => {
 }
 
 /* --- Product Cards --- */
-.shopping__card--item {
-    margin-bottom: 16px;
+.shopping-list-container {
     border: 1px solid #e9e8ea;
-    padding: 16px;
+    background: #fff;
+}
+
+.shopping__card--item {
+    margin-bottom: -8px;
+    border: none;
+    padding: 30px 20px;
+    position: relative;
+}
+
+.shopping__card--item::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: #e9e8ea; 
+    width: 95%; 
+    margin: 0 auto; 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.shopping__card--item:last-child::after {
+    display: none;
 }
 
 .shopping-product-card {
@@ -457,11 +539,12 @@ const removeLine = (item) => {
 }
 
 .item-select {
-    padding-top: 35px;
+    padding-top:50px;
 }
 
 .shopping-product-card__image {
     width: 100px;
+    height: auto;
     flex-shrink: 0;
 }
 .shopping-product-card__image img {
@@ -476,43 +559,54 @@ const removeLine = (item) => {
     flex-direction: column;
 }
 
-.shopping-product-card__info--title {
+.shopping-product-card__info--title-block {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; 
     align-items: flex-start;
+    margin-bottom: 7px;
 }
 
 .product-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
-    margin: 0;
+    margin: 0 0 5px 0;
     line-height: 1.4;
-    max-width: 85%;
+    max-width: 95%;
+    transition: color 0.2s ease;
+}
+
+.interactive-text {
+  cursor: pointer;
+}
+
+.item-price-block {
+    margin-top: 3px;
 }
 
 .shopping-product-card__info--price-new {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000;
 }
 
 .shopping-product-card__info--size {
     display: flex;
     align-items: center;
-    margin-top: 8px;
+    margin-top: 15px;
     font-size: 12px;
     font-weight: 700;
-    gap: 8px;
+    gap: 10px;
     text-transform: uppercase;
 }
 .edit-btn {
     border: none;
     background: none;
     cursor: pointer;
-    font-size: 14px;
-    color: #999;
+    color: #22242a;
     padding: 0;
     display: flex;
     align-items: center;
+    transition: color 0.2s ease;
 }
 
 .shopping-product-card__info--controls {
@@ -525,43 +619,44 @@ const removeLine = (item) => {
 .qty-selector {
     display: flex;
     align-items: center;
-    font-size: 12px;
-    color: #666;
-    gap: 5px;
+    font-size: 10px;
+    color: #22242a;
+    gap: 2px;
 }
 .qty-val {
     color: #000;
-    font-weight: 700;
+    font-weight: 600;
 }
-.qty-buttons button {
+.qty-buttons button, .minus-icon, .delete-icon {
     border: none;
     background: none;
-    font-size: 16px;
     cursor: pointer;
-    padding: 0 5px;
-}
-
-.delete-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #22242a;
-    padding: 0;
+    padding: 0 1px;
     display: flex;
     align-items: center;
+    color: #22242a;
+    transition: color 0.2s ease;
 }
-.delete-icon:hover { color: rgb(133, 128, 128); }
+
+.minus-icon:hover, 
+.delete-icon:hover,
+.qty-buttons button:hover,
+.edit-btn:hover,
+.product-title:hover {
+  color: #585562;
+}
 
 .delivery-estimate {
-    font-size: 11px;
-    color: #666;
+    font-size: 10px;
+    font-weight: 400;
+    color: #22242a;
     margin-top: 15px;
 }
 
 /* --- Summary Box --- */
 .shopping__summary-final {
     border: 1px solid #e9e8ea;
-    padding: 20px;
+    padding: 16px;
     margin-bottom: 20px;
     background: #fff;
 }
@@ -572,10 +667,10 @@ const removeLine = (item) => {
     align-items: center;
     font-size: 12px;
     font-weight: 300;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
 }
 .shopping__summary-final--item .f-bold {
-    font-weight: 600;
+    font-weight: 300;
     font-size: 14px;
 }
 .shopping__summary-final--item.discount {
@@ -595,23 +690,25 @@ const removeLine = (item) => {
     font-weight: 600;
 }
 .totalAmount .amount {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-/* --- Coupons & Extras --- */
-.shopping__coupon, .gift-package {
+.shopping__coupon {
     border: 1px solid #e9e8ea;
     padding: 15px;
-    margin-bottom: 0px;
-    background: #f8f8f9;
+    background: #fff; 
 }
 
 .coupon-header {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 10px;
+    font-weight: 300;
     color: #666;
+    border-bottom: 1px solid #000;
+    padding-bottom: 2px;
+    align-items: center;
 }
 .btn-link {
     background: none;
@@ -620,12 +717,142 @@ const removeLine = (item) => {
     cursor: pointer;
     font-weight: 500;
     color: #000;
-    font-size: 14px;
+    font-size: 12.5px;
 }
+
+.gift-package {
+    padding: 10px 15px; 
+    background: #F8F8F9; 
+}
+
+.gift-text {
+  font-size: 11.5px; 
+  font-weight: 400;
+  vertical-align: middle;
+}
+
+/* --- CSS النافذة المنبثقة (Modal) المحسن --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: #fff;
+  width: 450px; 
+  max-width: 95%;
+  padding: 20px 20px 30px 20px;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22242a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #000;
+}
+
+.modal__inner {
+  padding: 0 1px;
+}
+
+.modal__text {
+  font-size: 14px;
+  font-weight: 400; 
+  color: #22242a;
+  margin-top: 20px;
+  margin-bottom: 25px;
+  display: block;
+  line-height: 1.5;
+}
+
+.modal__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* التنسيق الأساسي لأزرار المودال */
+.btn-modal {
+  width: 100%;
+  height: 35px; /* ارتفاع الزر */
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #22242a; 
+  transition: all 0.3s ease;
+}
+
+/* الزر الأسود (الأول) */
+.btn-black {
+  background-color: #22242a;
+  color: #fff;
+}
+/* تأثير العكس عند المرور بالماوس: خلفية بيضاء ونص أسود */
+.btn-black:hover {
+  background-color: #fff;
+  color: #22242a;
+}
+
+/* الزر الأبيض (الثاني) */
+.btn-white {
+  background-color: #fff;
+  color: #22242a;
+}
+/* تأثير العكس عند المرور بالماوس: خلفية سوداء ونص أبيض */
+.btn-white:hover {
+  background-color: #22242a;
+  color: #fff;
+}
+
+h1, h3 {
+  text-transform: uppercase;
+}
+
+
 
 /* Responsive */
 @media (max-width: 900px) {
     .shopping__container { flex-direction: column; }
-    .shopping-right { width: 100%; }
+    .shopping-right { 
+      width: 100%; 
+      margin-top: 20px; 
+    }
+}
+@media(max-width: 767.98px) {
+    .modal-container {
+        width: 100%;
+        margin: 0 10px;
+    }
 }
 </style>

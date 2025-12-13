@@ -5,6 +5,10 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import useAuth from '../stores/useAuth'
 import { useCart } from '../stores/useCart'
 
+const toggleMenu = () => {
+  console.log('menu clicked')
+}
+
 const router = useRouter()
 const route = useRoute()
 const { user, logout } = useAuth()
@@ -41,6 +45,12 @@ const handleLogout = async () => {
     <div class="df-container">
       <!-- LEFT: logo + main cats -->
       <div class="df-left">
+        <button class="df-burger" type="button" aria-label="Menü" @click="toggleMenu">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
         <RouterLink to="/" class="df-logo" aria-label="DeFacto Ana Sayfa">
           <!-- ✅ شعار DeFacto SVG -->
           <svg
@@ -231,16 +241,16 @@ const handleLogout = async () => {
 /* ===== HEADER WRAPPER ===== */
 .df-header {
   background: #ffffff;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: none;
   padding: 12px 0;
 }
 
 .df-container {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 24px;
   display: grid;
-  grid-template-columns: auto minmax(0, 2fr) auto;
+  grid-template-columns: max-content 1fr max-content;
   align-items: center;
   column-gap: 32px;
 }
@@ -251,6 +261,27 @@ const handleLogout = async () => {
   align-items: center;
   gap: 28px;
 }
+
+.df-burger {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 0;
+}
+
+.df-burger span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: #22242a;
+}
+
 
 /* ✅ logo كسفج */
 .df-logo {
@@ -285,11 +316,10 @@ const handleLogout = async () => {
   width: 100%;
   display: flex;
   justify-content: flex-start;
-  padding-left: 170px; 
 }
 
 .df-search-wrap {
-  width: 100%;
+  width: 200%;
   max-width: 206px;
   height: 36px;
   background: transparent;
@@ -337,7 +367,7 @@ const handleLogout = async () => {
 /* روابط اليمين */
 .df-right-link {
   position: relative;
-  font-size: 13px;
+  font-size: 12px;
   color: #22242a;
   text-decoration: none;
   text-transform: uppercase;

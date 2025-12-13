@@ -499,7 +499,7 @@ const onChangeCountry = () => {
 
 .benefit-sub {
   font-size: 12px;
-  color: #6b806b;
+  color: #22242a;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -553,7 +553,7 @@ const onChangeCountry = () => {
 
 .col a {
   font-size: 12px;
-  color: #4b634c;
+  color: #22242a;
   text-decoration: none;
   text-transform: uppercase;
   display: inline-block;
@@ -562,7 +562,7 @@ const onChangeCountry = () => {
 
 .col a:hover,
 .col a:focus-visible {
-  color: #848484;
+  color: #585562;
 }
 
 /* Bize Ulaşın support block */
@@ -642,7 +642,7 @@ const onChangeCountry = () => {
 
 .country-text:hover,
 .country-text:focus-visible {
-  color: #848484;
+  color: #585562;
 }
 
 /* Copy row */

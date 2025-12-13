@@ -668,6 +668,10 @@ watch(
   cursor: pointer;          /* 👈 اليد على النص فقط */
 }
 
+.title {
+  text-transform: uppercase;
+}
+
 
 
 /* حالات عامة */

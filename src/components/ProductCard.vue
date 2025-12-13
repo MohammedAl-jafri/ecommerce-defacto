@@ -372,4 +372,9 @@ const toggleFav = () => {
   position: relative;
   z-index: 1;   /* العنوان تحتهم */
 }
+
+h1, h3 {
+  text-transform: uppercase;
+}
+
 </style>
