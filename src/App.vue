@@ -54,7 +54,7 @@ const isFullPage = computed(
     </main>
 
     <!-- الفوتر مخفي فقط في صفحة components -->
-    <FooterBar v-if="!isComponents" />
+    <FooterBar v-if="!isComponents && !isCheckout" />
   </div>
 </template>
 
