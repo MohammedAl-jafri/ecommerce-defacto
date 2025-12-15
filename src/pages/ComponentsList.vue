@@ -9,7 +9,7 @@ import FooterBar from '../components/FooterBar.vue'
 import Home from './Home.vue'
 import Products from './Products.vue'
 import Cart from './Cart.vue'
-import Checkout from './Checkout.vue'
+import Favorites from './Favorites.vue'
 import Login from './Login.vue'
 import Register from './Register.vue'
 import Profile from './Profile.vue'
@@ -25,7 +25,7 @@ import {
   limit,
 } from 'firebase/firestore'
 
-const PREVIEW_PRODUCT_ID = 7
+const PREVIEW_PRODUCT_ID = 4
 
 const detailProduct = ref(null)
 const detailLoading = ref(true)
@@ -126,13 +126,14 @@ const sections = [
     subtitle: 'Yeni kullanıcı kayıt formu.',
     component: Register,
   },
-  {
-    id: 'checkout',
-    order: '9',
-    title: 'Checkout (Adres / Özet)',
-    subtitle: 'Teslimat adresi ve sipariş özeti.',
-    component: Checkout,
-  },
+{
+  id: 'favorites',
+  order: '9',
+  title: 'Favorilerim',
+  subtitle: 'Favori ürünlerim listesi.',
+  component: Favorites,
+},
+
   {
     id: 'profile',
     order: '10',

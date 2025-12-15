@@ -1,9 +1,21 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '../stores/useCart'
 
+const router = useRouter()
+
+const goFavorites = () => {
+  router.push('/favorites')
+}
+
+const goBack = () => {
+  if (window.history.length > 1) router.back()
+  else router.push('/products')
+}
+
 const { items, total, updateQty, removeFromCart } = useCart()
+
 
 // --- حالة النافذة المنبثقة (Modal State) ---
 const showModal = ref(false)
@@ -86,14 +98,14 @@ const removeLine = (item) => {
       <div class="shopping-left">
         <div class="shopping__header">
            <div class="shopping__header--title">
-             <span class="back-arrow">
+             <span class="back-arrow" @click="goBack">
                <svg viewBox="0 0 20 16" width="16" height="10">
                  <path fill="currentColor" d="M8.139 0a.698.686 0 0 0-.494.202L.205 7.515H.203a.698.686 0 0 0-.15.223.698.686 0 0 0-.053.261.698.686 0 0 0 .053.263.698.686 0 0 0 .15.223h.002l7.439 7.314a.698.686 0 0 0 .988 0 .698.686 0 0 0 0-.969L2.379 8.684h16.922A.698.686 0 0 0 20 7.999a.698.686 0 0 0-.699-.685H2.383l6.25-6.143a.698.686 0 0 0 0-.969A.698.686 0 0 0 8.139 0"></path>
                </svg>
              </span> 
              <span>SEPETİM ({{ items.length }} ÜRÜN)</span>
            </div>
-           <button class="shopping__header--favorite glow-effect">
+           <button class="shopping__header--favorite glow-effect" type="button" @click="goFavorites">
              <svg viewBox="0 0 20 18" width="19" height="18" style="margin-right:5px;">
                <path fill="currentColor" d="M5.197 0a5.06 5.06 0 0 0-3.69 1.6c-2.009 2.13-2.007 5.497 0 7.629l8.101 8.606a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l8.109-8.599c2.009-2.13 2.009-5.498 0-7.629a5.06 5.06 0 0 0-7.381 0L10 2.785 8.887 1.6A5.06 5.06 0 0 0 5.197 0m0 .911c1.047 0 2.096.436 2.922 1.311l1.497 1.592a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l1.489-1.585c1.651-1.751 4.185-1.75 5.836 0s1.651 4.635 0 6.385L10 16.798 2.283 8.606a4.74 4.74 0 0 1 0-6.385C3.108 1.347 4.15.911 5.196.911z"></path>
              </svg>
@@ -118,7 +130,11 @@ const removeLine = (item) => {
                 </div>
                 <div class="shopping-product-card__image">
                   <img :src="getImage(item)" :alt="item.title" />
-                </div>
+                
+                  <div class="delivery-estimate">
+                    TAHMİNİ TESLİMAT: 13 ARALIK - 18 ARALIK
+                  </div>
+                </div>  
                 <div class="shopping-product-card__info">
                   <div class="shopping-product-card__info--title-block">
                     <h3 class="product-title interactive-text">{{ item.title }}</h3>
@@ -159,10 +175,7 @@ const removeLine = (item) => {
                       </div>
                     </div>
                   </div>
-                  <div class="delivery-estimate">
-                    TAHMİNİ TESLİMAT: 13 ARALIK - 18 ARALIK
-                  </div>  
-                 </div>  
+                </div> 
              </div> 
            </div>
          </div>
@@ -461,8 +474,8 @@ const removeLine = (item) => {
 }
 
 .shopping__header--favorite svg {
-    color: #22242a !important; /* إجبار القلب على البقاء أسود */
-    transition: none; /* إلغاء الحركة عن القلب */
+    color: #22242a !important; 
+    transition: none; 
 }
 .shopping__header--favorite:hover {
     color: #585562; 
@@ -544,9 +557,12 @@ const removeLine = (item) => {
 
 .shopping-product-card__image {
     width: 100px;
-    height: auto;
     flex-shrink: 0;
+    display: flex;             
+    flex-direction: column;     
+    align-items: center;
 }
+
 .shopping-product-card__image img {
     width: 100%;
     height: auto;
@@ -647,10 +663,11 @@ const removeLine = (item) => {
 }
 
 .delivery-estimate {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 400;
     color: #22242a;
-    margin-top: 15px;
+    margin-top: 20px;
+    white-space: nowrap;
 }
 
 /* --- Summary Box --- */

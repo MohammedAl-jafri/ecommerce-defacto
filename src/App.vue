@@ -26,13 +26,18 @@ const isCheckout = computed(
   () => route.name === 'checkout' || route.path === '/checkout'
 )
 
+const isProducts = computed(
+  () => route.name === 'products' || route.path.startsWith('/products')
+)
+
 // كل الصفحات اللي نبيها Full Page
 const isFullPage = computed(
   () =>
     isComponents.value ||
     isAuth.value ||
     isCart.value ||
-    isCheckout.value
+    isCheckout.value ||
+    isProducts.value
 )
 </script>
 

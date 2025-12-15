@@ -318,7 +318,7 @@ const toggleFav = () => {
 
 /* العنوان */
 .title {
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 400;
   color: #111111;
   margin-top: -45px;
@@ -340,13 +340,13 @@ const toggleFav = () => {
 }
 
 .price-main {
-  font-size: 13px;
+  font-size: 12px;
   color: #111111;
   font-weight: 500;
 }
 
 .price-main--discount {
-  padding: 2px 8px;
+  padding: 2px 2px;
   background: #111111;
   color: #ffffff;
 }

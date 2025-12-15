@@ -250,7 +250,7 @@ const handleLogout = async () => {
   margin: 0 auto;
   padding: 0 24px;
   display: grid;
-  grid-template-columns: max-content 1fr max-content;
+  grid-template-columns: max-content minmax(320px, 1fr) max-content;
   align-items: center;
   column-gap: 32px;
 }
@@ -315,11 +315,11 @@ const handleLogout = async () => {
 .df-middle {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 
 .df-search-wrap {
-  width: 200%;
+  width: 100%;
   max-width: 206px;
   height: 36px;
   background: transparent;
@@ -327,9 +327,11 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   padding: 0 10px;
-  gap: 8px;
+  gap: 12px;
   border: 1px solid #22242a;
   cursor: text;
+  box-sizing: border-box;
+  min-width: 180px;
 }
 
 .df-search-icon {
