@@ -5,7 +5,12 @@ import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '../components/ProductCard.vue'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
+import { useCart } from '../stores/useCart'
+import { useToast } from '../stores/useToast'
 
+
+const cart = useCart()
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
@@ -160,16 +165,57 @@ const clearFilters = () => {
   tempCat.value = ''
   tempSort.value = ''
 }
+
+const sizeOpen = ref(false)
+const sizeProduct = ref(null)
+
+const defaultSizes = ['XS', 'S', 'M', 'L', 'XL']
+
+const sizeOptions = computed(() => {
+  const p = sizeProduct.value
+  if (!p) return defaultSizes
+  const s = p.sizes || p.availableSizes
+  return Array.isArray(s) && s.length ? s : defaultSizes
+})
+
+const onPickSize = (product) => {
+  if (!product) return
+  if (!['women', 'men', 'kids'].includes(product.mainCategory)) return
+
+  sizeProduct.value = product
+  sizeOpen.value = true
+}
+
+const closeSize = () => {
+  sizeOpen.value = false
+  sizeProduct.value = null
+}
+
+const chooseSize = (size) => {
+  if (!sizeProduct.value) return
+
+  const p = {
+    id: sizeProduct.value.id,
+    title: sizeProduct.value.title || sizeProduct.value.name || 'Ürün',
+    price: sizeProduct.value.price ?? 0,
+    category: sizeProduct.value.category || '',
+    mainCategory: sizeProduct.value.mainCategory || '',
+    image: sizeProduct.value.image || '',
+    size,
+  }
+
+  cart.addToCart(p, 1)
+  toast.showCartAdded()
+  closeSize()
+}
 </script>
 
 <template>
   <section class="products-page">
-    <!-- عنوان الكاتيجوري مثل ERKEK DIŞ GİYİM -->
     <header class="products-header">
       <h1 class="products-title">TÜM ÜRÜNLER</h1>
     </header>
 
-    <!-- صف علوي: ملخص مختصر + زر فلاتر على اليمين -->
     <div class="products-top-row">
       <div class="products-summary">
         {{ selectedInfo }}
@@ -184,22 +230,56 @@ const clearFilters = () => {
       </button>
     </div>
 
-    <!-- شبكة المنتجات -->
-    <div class="grid" v-if="filtered.length">
-      <ProductCard
-        v-for="p in filtered"
-        :key="p.id"
-        :item="p"
-        @detail="goToDetail"
-      />
-    </div>
+<div class="grid" v-if="filtered.length">
+  <ProductCard
+    v-for="p in filtered"
+    :key="p.id"
+    :item="p"
+    @detail="goToDetail"
+    @pickSize="onPickSize"
+  />
+</div>
+
 
     <p v-else class="empty-text">
       Filtrelere uygun ürün bulunamadı.
     </p>
 
-    <!-- 🔹 Overlay + Panel الفلاتر مثل DeFacto -->
-    <transition name="filters-fade">
+     <transition name="filters-fade">
+      <div
+        v-if="sizeOpen"
+        class="size-overlay"
+        @click.self="closeSize"
+      >
+        <div class="size-panel">
+          <div class="size-head">
+            <span class="size-title">BEDEN</span>
+            <button
+              class="size-close"
+              type="button"
+              @click="closeSize"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div class="size-grid">
+            <button
+              v-for="s in sizeOptions"
+              :key="s"
+              type="button"
+              class="size-btn"
+              @click="chooseSize(s)"
+            >
+              {{ s }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+  
+
+      <transition name="filters-fade">
       <div
         v-if="isFiltersOpen"
         class="filters-overlay"
@@ -226,73 +306,44 @@ const clearFilters = () => {
 
           <div class="filters-body">
             <!-- SIRALA -->
-<section class="filters-group">
-  <h3 class="filters-group-title">SIRALA</h3>
+            <section class="filters-group">
+              <h3 class="filters-group-title">SIRALA</h3>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value=""
-      v-model="tempSort"
-    />
-    <span>ÖNERİLEN</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="" v-model="tempSort" />
+                <span>ÖNERİLEN</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="newest"
-      v-model="tempSort"
-    />
-    <span>YENİ GELENLER</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="newest" v-model="tempSort" />
+                <span>YENİ GELENLER</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="bestseller"
-      v-model="tempSort"
-    />
-    <span>ÇOK SATANLAR</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="bestseller" v-model="tempSort" />
+                <span>ÇOK SATANLAR</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="price-desc"
-      v-model="tempSort"
-    />
-    <span>FİYAT (AZALAN)</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="price-desc" v-model="tempSort" />
+                <span>FİYAT (AZALAN)</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="price-asc"
-      v-model="tempSort"
-    />
-    <span>FİYAT (ARTAN)</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="price-asc" v-model="tempSort" />
+                <span>FİYAT (ARTAN)</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="top-rated"
-      v-model="tempSort"
-    />
-    <span>EN ÇOK DEĞERLENDİRİLENLER</span>
-  </label>
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="top-rated" v-model="tempSort" />
+                <span>EN ÇOK DEĞERLENDİRİLENLER</span>
+              </label>
 
-  <label class="filters-option filters-option--sort">
-    <input
-      type="radio"
-      value="favorite"
-      v-model="tempSort"
-    />
-    <span>EN FAVORİLER</span>
-  </label>
-</section>
-
+              <label class="filters-option filters-option--sort">
+                <input type="radio" value="favorite" v-model="tempSort" />
+                <span>EN FAVORİLER</span>
+              </label>
+            </section>
 
             <!-- CİNSİYET -->
             <section class="filters-group">
@@ -324,52 +375,32 @@ const clearFilters = () => {
               </label>
             </section>
 
-            <!-- KATEGORİ (كما كان عندك) -->
+            <!-- KATEGORİ -->
             <section class="filters-group">
               <h3 class="filters-group-title">KATEGORİ</h3>
 
               <label class="filters-option filters-option--cat">
-                <input
-                  type="radio"
-                  value=""
-                  v-model="tempCat"
-                />
+                <input type="radio" value="" v-model="tempCat" />
                 <span>Hepsi</span>
               </label>
 
               <label class="filters-option filters-option--cat">
-                <input
-                  type="radio"
-                  value="women"
-                  v-model="tempCat"
-                />
+                <input type="radio" value="women" v-model="tempCat" />
                 <span>Kadın</span>
               </label>
 
               <label class="filters-option filters-option--cat">
-                <input
-                  type="radio"
-                  value="men"
-                  v-model="tempCat"
-                />
+                <input type="radio" value="men" v-model="tempCat" />
                 <span>Erkek</span>
               </label>
 
               <label class="filters-option filters-option--cat">
-                <input
-                  type="radio"
-                  value="kids"
-                  v-model="tempCat"
-                />
+                <input type="radio" value="kids" v-model="tempCat" />
                 <span>Çocuk &amp; Bebek</span>
               </label>
 
               <label class="filters-option filters-option--cat">
-                <input
-                  type="radio"
-                  value="accessory"
-                  v-model="tempCat"
-                />
+                <input type="radio" value="accessory" v-model="tempCat" />
                 <span>Aksesuar</span>
               </label>
             </section>
@@ -1282,6 +1313,72 @@ const clearFilters = () => {
 .filters-fade-leave-to {
   opacity: 0;
 }
+
+.size-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+}
+
+.size-panel {
+  width: 520px;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  padding: 18px 18px 22px;
+}
+
+.size-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.size-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.size-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.size-btn {
+  height: 44px;
+  border: 1px solid #111;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.size-btn:hover {
+  background: #f3f4f6;
+}
+
+@media (max-width: 600px) {
+  .size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 
 /* استجابة بسيطة للشاشات الصغيرة */
 @media (max-width: 900px) {

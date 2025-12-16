@@ -32,7 +32,6 @@ const product = ref(props.product)
 const loading = ref(true)
 const notFound = ref(false)
 
-// 🔽 حالة القائمة (مفتوحة / مغلقة)
 const isShareOpen = ref(false)
 
 const buildProduct = (snap) => {
@@ -97,14 +96,58 @@ const loadProduct = async (idParam) => {
   }
 }
 
+const sizeOpen = ref(false)
+const selectedSize = ref('')
+
+const defaultSizes = ['XS', 'S', 'M', 'L', 'XL','XXL']
+
+const isNeedsSize = computed(() => {
+  if (!product.value) return false
+  const mainCategory =
+    product.value.mainCategory || product.value.cat || product.value.categoryMain || ''
+  return cart.isSizedCategory(mainCategory)
+})
+
+const sizeOptions = computed(() => {
+  const p = product.value
+  if (!p) return defaultSizes
+  const s = p.sizes || p.availableSizes
+  return Array.isArray(s) && s.length ? s : defaultSizes
+})
+
+const toggleSizeDropdown = () => {
+  sizeOpen.value = !sizeOpen.value
+}
+
+const closeSizeDropdown = () => {
+  sizeOpen.value = false
+}
+
+const chooseSize = (s) => {
+  selectedSize.value = String(s || '').trim()
+  closeSizeDropdown()
+  addToCart()
+}
+
+
+
 const addToCart = () => {
   if (!product.value) return
-  cart.addToCart(product.value)
-  console.log('added to cart from detail (pinia):', product.value.title)
 
+  if (isNeedsSize.value && !selectedSize.value) {
+    selectedSize.value = ''
+    sizeOpen.value = true
+    return
+  }
 
-    // 🎉 إظهار نفس Toast حق السلة
+  const payload = {
+    ...product.value,
+    size: isNeedsSize.value ? selectedSize.value : (product.value.size || null),
+  }
+
+  cart.addToCart(payload)
   toast.showCartAdded()
+  selectedSize.value = ''   
 }
 
 const isFav = computed(() =>
@@ -139,6 +182,19 @@ watch(
     }
   },
 )
+
+const vClickOutside = {
+  mounted(el, binding) {
+    el.__clickOutside__ = (e) => {
+      if (!(el === e.target || el.contains(e.target))) binding.value(e)
+    }
+    document.addEventListener('click', el.__clickOutside__)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el.__clickOutside__)
+  },
+}
+
 </script>
 
 <template>
@@ -300,10 +356,30 @@ watch(
           </div>
         </div>
 
-        <!-- زر SEPETE EKLE -->
-        <button class="detail-add-btn" @click="addToCart">
-          SEPETE EKLE
-        </button>
+<div class="addbox" v-click-outside="closeSizeDropdown">
+  <button 
+    v-show="!sizeOpen" 
+    class="detail-add-btn" 
+    @click.stop="addToCart"
+  >
+    SEPETE EKLE
+  </button>
+
+  <transition name="size-drop">
+    <div v-show="sizeOpen" class="size-dropdown">
+      <button
+        v-for="s in sizeOptions"
+        :key="s"
+        type="button"
+        class="size-row"
+        @click.stop="chooseSize(s)"
+      >
+        {{ s }}
+      </button>
+    </div>
+  </transition>
+</div>
+
 
         <!-- الوصف -->
         <div class="detail-description" v-if="product.description">
@@ -662,7 +738,7 @@ watch(
 /* شكل النص مثل الموقع (غامق قليلاً) */
 .info-section-title {
   font-size: 13px;
-  letter-spacing: 0.08em;
+  font-weight: 500;
   text-transform: uppercase;
   color: #22242a;
   cursor: pointer;          /* 👈 اليد على النص فقط */
@@ -686,7 +762,43 @@ watch(
   padding: 40px;
 }
 
-/* Responsive */
+.addbox {
+  position: relative;
+  width: 100%;
+}
+
+.size-dropdown {
+  width: 100%;
+  border: 1px solid #d4d4d4;
+  background: #fff;
+  margin-top: 0px;
+  padding: 15px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.size-row {
+  width: 100%;
+  text-align: left;
+  padding: 14px 22px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 17px;
+  color: #111;
+}
+
+.size-row:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .detail-layout {
     grid-template-columns: minmax(0, 1fr);

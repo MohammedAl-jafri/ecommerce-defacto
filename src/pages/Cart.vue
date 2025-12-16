@@ -14,7 +14,7 @@ const goBack = () => {
   else router.push('/products')
 }
 
-const { items, total, updateQty, removeFromCart } = useCart()
+const { items, total, updateQty, removeFromCart, setItemSize, isSizedCategory } = useCart()
 
 
 // --- حالة النافذة المنبثقة (Modal State) ---
@@ -39,7 +39,7 @@ const confirmDelete = (addToFavorites) => {
     if (addToFavorites) {
       console.log(`تمت إضافة المنتج ${itemToDelete.value.id} للمفضلة`)
     }
-    removeFromCart(itemToDelete.value.id)
+    removeFromCart(itemToDelete.value.key || itemToDelete.value.id)
   }
   closeModal()
 }
@@ -60,13 +60,15 @@ const getImage = (item) => {
   return img || fallback
 }
 
+const lineKey = (item) => item?.key || item?.id
+
 const increaseQty = (item) => {
-  updateQty(item.id, (item.qty || 1) + 1)
+  updateQty(lineKey(item), (item.qty || 1) + 1)
 }
 
 const decreaseQty = (item) => {
   if (item.qty > 1) {
-    updateQty(item.id, item.qty - 1)
+    updateQty(lineKey(item), item.qty - 1)
   } else {
     openDeleteModal(item)
   }
@@ -74,6 +76,36 @@ const decreaseQty = (item) => {
 
 const removeLine = (item) => {
   openDeleteModal(item)
+}
+
+const sizeOpen = ref(false)
+const sizeEditItem = ref(null)
+
+const defaultSizes = ['XS', 'S', 'M', 'L', 'XL']
+
+const sizeOptions = computed(() => {
+  const it = sizeEditItem.value
+  if (!it) return defaultSizes
+  const s = it.sizes || it.availableSizes
+  return Array.isArray(s) && s.length ? s : defaultSizes
+})
+
+const openSizeEdit = (item) => {
+  if (!item) return
+  if (!isSizedCategory(item.mainCategory)) return
+  sizeEditItem.value = item
+  sizeOpen.value = true
+}
+
+const closeSize = () => {
+  sizeOpen.value = false
+  sizeEditItem.value = null
+}
+
+const chooseSize = (size) => {
+  if (!sizeEditItem.value) return
+  setItemSize(lineKey(sizeEditItem.value), size)
+  closeSize()
 }
 </script>
 
@@ -120,12 +152,12 @@ const removeLine = (item) => {
 
         <div class="shopping-list">
           <div class="shopping-list-container">
-           <div v-for="item in items" :key="item.id" class="shopping__card--item">
+           <div v-for="item in items" :key="lineKey(item)" class="shopping__card--item">
             <div class="shopping-product-card">
                 <div class="item-select">
                     <div class="custom-checkbox custom-checkbox--black">
-                        <input :id="'chk-' + item.id" type="checkbox" checked>
-                        <label :for="'chk-' + item.id"></label>
+                        <input :id="'chk-' + lineKey(item)" type="checkbox" checked>
+                        <label :for="'chk-' + lineKey(item)"></label>
                     </div>
                 </div>
                 <div class="shopping-product-card__image">
@@ -142,11 +174,17 @@ const removeLine = (item) => {
                        <span class="shopping-product-card__info--price-new">{{ item.price }} TL</span>
                     </div>
                   </div>
-                  <div class="shopping-product-card__info--size">
-                    <span>BEJ / 2/3 YAŞ (98CM)</span> 
-                    <button class="edit-btn">
+                  <div
+                    v-if="isSizedCategory(item.mainCategory)"
+                    class="shopping-product-card__info--size"
+                  >
+                    <span>BEDEN: {{ (item.size || '-').toString().toUpperCase() }}</span>
+                    <button class="edit-btn" type="button" @click="openSizeEdit(item)">
                       <svg viewBox="0 0 19 17.723" width="13" height="13">
-                        <path fill="currentColor" d="M13.357 0a2.37 2.37 0 0 0-1.68.693l-9.586 9.584-1.479 5.545 5.545-1.479 9.586-9.586a2.38 2.38 0 0 0 0-3.357l-.707-.707A2.37 2.37 0 0 0 13.357 0m0 .744a1.62 1.62 0 0 1 1.148.479l.707.707a1.62 1.62 0 0 1 0 2.299l-.891.891-3.006-3.004.891-.893a1.62 1.62 0 0 1 1.15-.479zm-2.572 1.9 3.006 3.006-8.021 8.021-4.098 1.094 1.094-4.1zM0 16.723v1h19v-1H.5z"></path>
+                        <path
+                          fill="currentColor"
+                          d="M13.357 0a2.37 2.37 0 0 0-1.68.693l-9.586 9.584-1.479 5.545 5.545-1.479 9.586-9.586a2.38 2.38 0 0 0 0-3.357l-.707-.707A2.37 2.37 0 0 0 13.357 0m0 .744a1.62 1.62 0 0 1 1.148.479l.707.707a1.62 1.62 0 0 1 0 2.299l-.891.891-3.006-3.004.891-.893a1.62 1.62 0 0 1 1.15-.479zm-2.572 1.9 3.006 3.006-8.021 8.021-4.098 1.094 1.094-4.1zM0 16.723v1h19v-1H.5z"
+                        ></path>
                       </svg>
                     </button>
                   </div>
@@ -248,6 +286,29 @@ const removeLine = (item) => {
       </div>
     </div>
 
+    <transition name="size-fade">
+      <div v-if="sizeOpen" class="size-overlay" @click.self="closeSize">
+        <div class="size-panel">
+          <div class="size-head">
+            <span class="size-title">BEDEN</span>
+            <button class="size-close" type="button" @click="closeSize">✕</button>
+          </div>
+
+          <div class="size-grid">
+            <button
+              v-for="s in sizeOptions"
+              :key="s"
+              type="button"
+              class="size-btn"
+              @click="chooseSize(s)"
+            >
+              {{ s }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div id="productDeleteModal" class="modal-container">
         <div class="modal__header">
@@ -276,7 +337,7 @@ const removeLine = (item) => {
 </template>
 
 <style scoped>
-/* استيراد الخطوط لضمان التطابق 100% مع الصورة */
+
 @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700&family=Mulish:wght@400;500;600;700;800&display=swap');
 
 .shopping-cart-page {
@@ -856,9 +917,81 @@ h1, h3 {
   text-transform: uppercase;
 }
 
+.size-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+}
 
+.size-panel {
+  width: 520px;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  padding: 18px 18px 22px;
+}
 
-/* Responsive */
+.size-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.size-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.size-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.size-btn {
+  height: 44px;
+  border: 1px solid #111;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.size-btn:hover {
+  background: #f3f4f6;
+}
+
+.size-fade-enter-active,
+.size-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.size-fade-enter-from,
+.size-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 600px) {
+  .size-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
     .shopping__container { flex-direction: column; }
     .shopping-right { 
