@@ -81,7 +81,7 @@ const removeLine = (item) => {
 const sizeOpen = ref(false)
 const sizeEditItem = ref(null)
 
-const defaultSizes = ['XS', 'S', 'M', 'L', 'XL']
+const defaultSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const sizeOptions = computed(() => {
   const it = sizeEditItem.value

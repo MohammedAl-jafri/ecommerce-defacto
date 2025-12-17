@@ -127,10 +127,19 @@ const toggleGift = () => {
             </div>
 
             <div v-else class="empty-state">
-              Henüz favori ürün eklemediniz.
+              <div class="empty-icon-wrapper">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22242a" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </div>
+              <p class="empty-text">FAVORİLERİNİZDE ÜRÜN BULUNMAMAKTADIR.</p>
+              <RouterLink to="/home" class="start-shopping-btn">
+                ALIŞVERİŞE BAŞLA
+              </RouterLink>
             </div>
 
-          </div> </main>
+          </div> 
+        </main>
       </div>
     </div>
   </div>
@@ -407,8 +416,43 @@ const toggleGift = () => {
 }
 
 .empty-state {
-  color: #777;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  text-align: center;
+}
+
+.empty-icon-wrapper {
+  margin-bottom: 20px;
+  color: #22242a;
+}
+
+.empty-text {
   font-size: 14px;
-  padding: 40px 0;
+  color: #22242a;
+  font-weight: 500;
+  margin: 0 0 25px 0;
+  letter-spacing: 0.5px;
+}
+
+.start-shopping-btn {
+  background-color: #22242a; /* اللون الأسود للزر */
+  color: #fff;
+  border: 1px solid #22242a;
+  padding: 10px 100px; /* مساحة عريضة للزر */
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: background-color 0.4s;
+}
+
+.start-shopping-btn:hover {
+    background-color: #fff;
+    color: #22242a;
+    font-weight: 500;
 }
 </style>

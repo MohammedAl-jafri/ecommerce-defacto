@@ -30,6 +30,13 @@ const isProducts = computed(
   () => route.name === 'products' || route.path.startsWith('/products')
 )
 
+const isHome = computed(() => route.name === 'home' || route.path === '/' || route.path.startsWith('/home'))
+
+const isFavorites = computed(() => route.name === 'favorites' || route.path === '/favorites')
+
+const isProductDetail = computed(() => route.name === 'product' || route.path.startsWith('/product/'))
+
+
 // كل الصفحات اللي نبيها Full Page
 const isFullPage = computed(
   () =>
@@ -37,14 +44,17 @@ const isFullPage = computed(
     isAuth.value ||
     isCart.value ||
     isCheckout.value ||
-    isProducts.value
+    isProducts.value ||
+    isHome.value ||
+    isFavorites.value ||
+    isProductDetail.value
 )
 </script>
 
 <template>
   <div>
     <!-- الهيدر مخفي فقط في صفحة components -->
-    <HeaderBar v-if="!isComponents" />
+    <HeaderBar v-if="!isComponents && !isHome" />
 
     <CartToast />
 
@@ -59,7 +69,7 @@ const isFullPage = computed(
     </main>
 
     <!-- الفوتر مخفي فقط في صفحة components -->
-    <FooterBar v-if="!isComponents && !isCheckout" />
+    <FooterBar v-if="!isComponents && !isCheckout && !isHome" />
   </div>
 </template>
 

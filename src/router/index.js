@@ -22,6 +22,9 @@ const routes = [
   // Landing page -> Components list
   { path: '/', redirect: '/components' },
 
+  { path: '/home', name: 'home', component: Home },
+
+
   { path: '/components', name: 'components', component: ComponentsList },
 
   { path: '/products', name: 'products', component: Products },
