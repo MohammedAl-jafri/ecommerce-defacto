@@ -5,6 +5,13 @@ import { useCart } from '../stores/useCart'
 
 const router = useRouter()
 
+const goToDetail = (item) => {
+  const pid =
+    item?.productId ??
+    item?.id
+  router.push(`/product/${pid}`)
+}
+
 const goFavorites = () => {
   router.push('/favorites')
 }
@@ -17,23 +24,19 @@ const goBack = () => {
 const { items, total, updateQty, removeFromCart, setItemSize, isSizedCategory } = useCart()
 
 
-// --- حالة النافذة المنبثقة (Modal State) ---
 const showModal = ref(false)
 const itemToDelete = ref(null)
 
-// فتح النافذة
 const openDeleteModal = (item) => {
   itemToDelete.value = item
   showModal.value = true
 }
 
-// إغلاق النافذة
 const closeModal = () => {
   showModal.value = false
   itemToDelete.value = null
 }
 
-// تنفيذ الحذف
 const confirmDelete = (addToFavorites) => {
   if (itemToDelete.value) {
     if (addToFavorites) {
@@ -44,12 +47,11 @@ const confirmDelete = (addToFavorites) => {
   closeModal()
 }
 
-// --- البيانات الأساسية ---
 const fallback = 'https://via.placeholder.com/120x160.png?text=No+image'
 const hasItems = computed(() => items.value.length > 0)
-const shippingCost = computed(() => (total.value > 500 ? 0 : 29.99))
+const shippingCost = computed(() => 0)
 const discount = computed(() => 0)
-const grandTotal = computed(() => total.value + shippingCost.value - discount.value)
+const grandTotal = computed(() => total.value)
 
 const getImage = (item) => {
   let img = (item.image || '').toString().trim()
@@ -161,15 +163,20 @@ const chooseSize = (size) => {
                     </div>
                 </div>
                 <div class="shopping-product-card__image">
-                  <img :src="getImage(item)" :alt="item.title" />
-                
+                    <img :src="getImage(item)"
+                         :alt="item.title"
+                         @click="goToDetail(item)"
+                         class="clickable-media"
+                         />
                   <div class="delivery-estimate">
                     TAHMİNİ TESLİMAT: 13 ARALIK - 18 ARALIK
                   </div>
                 </div>  
                 <div class="shopping-product-card__info">
                   <div class="shopping-product-card__info--title-block">
-                    <h3 class="product-title interactive-text">{{ item.title }}</h3>
+                      <h3 class="product-title interactive-text" @click="goToDetail(item)">
+                        {{ item.title }}
+                      </h3>  
                     <div class="item-price-block">
                        <span class="shopping-product-card__info--price-new">{{ item.price }} TL</span>
                     </div>
@@ -229,8 +236,7 @@ const chooseSize = (size) => {
               </div>
               <div class="shopping__summary-final--item">
                 <span>KARGO</span>
-                <span class="f-bold" v-if="shippingCost === 0">ÜCRETSİZ</span>
-                <span class="f-bold" v-else>{{ shippingCost }} TL</span>
+                <span class="f-bold">ÜCRETSİZ</span>
               </div>
               <div class="shopping__summary-final--item discount" v-if="discount > 0">
                 <span>TOPLAM İNDİRİM</span>
@@ -622,6 +628,7 @@ const chooseSize = (size) => {
     display: flex;             
     flex-direction: column;     
     align-items: center;
+    cursor: pointer;
 }
 
 .shopping-product-card__image img {

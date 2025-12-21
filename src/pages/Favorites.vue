@@ -41,7 +41,7 @@ const toggleGift = () => {
     <div class="container">
       
       <div class="breadcrumb">
-        <router-link to="/" class="breadcrumb-item">ANASAYFA</router-link>
+        <router-link to="home" class="breadcrumb-item">ANASAYFA</router-link>
         <span class="sep"></span>
         
         <router-link to="/profile" class="breadcrumb-item">HESABIM</router-link>

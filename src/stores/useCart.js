@@ -75,7 +75,9 @@ export function useCart() {
     } else {
       items.value.push({
         key: rowKey,
-        id: product.id,
+        id: typeof product.id === 'object'
+            ? (product.id.productId ?? product.id.id)
+            : product.id,
         title: product.title,
         price: product.price,
         category: product.category || '',

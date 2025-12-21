@@ -9,12 +9,17 @@ import paymentLogosImg from '../assets/payment-icons.png'
 const router = useRouter()
 const { user } = useAuth()
 
-// State
-const step = ref(1) // 1: Address, 2: Payment
+const step = ref(1)
 const items = ref([])
 const loading = ref(false)
-const showEarnings = ref(false)
 const useSameAddress = ref(true)
+
+const deliveryTab = ref('address') 
+const storeSearch = ref({
+  phone: '',
+  city: '',
+  district: ''
+})
 
 // Saved Addresses
 const savedAddresses = ref([])
@@ -93,9 +98,7 @@ const subTotal = computed(() =>
   items.value.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0)
 )
 
-const shipping = 0
-const discount = computed(() => Math.round(subTotal.value * 0.05)) // 5% discount
-const earnings = computed(() => Math.round(subTotal.value * 0.07)) // 7% earnings
+const discount = computed(() => 0)
 const total = computed(() => subTotal.value - discount.value)
 const itemCount = computed(() => items.value.length)
 
@@ -246,7 +249,7 @@ const selectAddress = (id) => {
 
 // Go to Payment
 const goToPayment = () => {
-  if (!selectedAddressId.value) {
+  if (deliveryTab.value === 'address' && !selectedAddressId.value) {
     alert('Lütfen bir adres seçin.')
     return
   }
@@ -259,12 +262,26 @@ const placeOrder = async () => {
   loading.value = true
 
   try {
-    const selectedAddress = savedAddresses.value.find(a => a.id === selectedAddressId.value)
+    let selectedAddress = null
+    
+    if (deliveryTab.value === 'address') {
+       selectedAddress = savedAddresses.value.find(a => a.id === selectedAddressId.value)
+    } else {
+       // بيانات وهمية لعنوان المتجر (يمكنك تعديلها لاحقاً)
+       selectedAddress = {
+         addressTitle: 'MAĞAZADAN TESLİM',
+         city: storeSearch.value.city || 'Belirtilmedi',
+         district: storeSearch.value.district || 'Belirtilmedi',
+         phone: storeSearch.value.phone,
+         addressDetails: 'Mağazadan Teslim Alınacak'
+       }
+    }
     
     const orderData = {
       userId: user.value.uid,
       userEmail: user.value.email,
       address: selectedAddress,
+      deliveryMethod: deliveryTab.value,
       items: items.value.map((i) => ({
         id: i.id,
         title: i.title,
@@ -358,178 +375,231 @@ const placeOrder = async () => {
         </div>
       </div>
 
-<div class="checkout">
-  <div class="checkout__process">
-    <div v-if="step === 1">
+      <div class="checkout">
+        <div class="checkout__process">
+          <div v-if="step === 1">
 
-      <!-- ✅ ONE CONTAINER LIKE ORIGINAL -->
-      <div class="checkout-box checkout-box--panel">
+            <div class="checkout-box checkout-box--panel">
 
-        <!-- tabs INSIDE the same box -->
-        <div class="delivery-tabs delivery-tabs--inbox">
-          <div class="tab-box active">
-            <div class="tab-header"><strong>ADRESE TESLİMAT</strong></div>
-            <div class="tab-sub">
-              <span class="tag-black">ÜCRETSİZ</span>
-              <span class="date-range">• 16 ARALIK - 20 ARALIK</span>
-            </div>
-          </div>
-
-          <div class="tab-box inactive">
-            <div class="tab-header-inactive"><strong>MAĞAZADAN TESLİM</strong></div>
-            <div class="tab-sub">
-              <span class="tag-black">ÜCRETSİZ</span>
-              <span class="date-range">• 16 ARALIK - 20 ARALIK</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- line divider inside box -->
-        <div class="panel-divider"></div>
-
-        <!-- title inside same box -->
-        <div class="checkout-box__title">TESLİMAT ADRESLERİM</div>
-
-        <div class="checkout-box__content">
-          <div class="address-grid">
-            <div
-              v-for="addr in savedAddresses"
-              :key="addr.id"
-              class="addr-card"
-              :class="{ selected: selectedAddressId === addr.id }"
-            >
-              <div class="card-top">
-                <div class="card-top-left">
-                  <div class="radio-circle" @click="selectAddress(addr.id)">
-                    <div class="dot" v-if="selectedAddressId === addr.id"></div>
+              <div class="delivery-tabs delivery-tabs--inbox">
+                <div 
+                  class="tab-box" 
+                  :class="{ active: deliveryTab === 'address', inactive: deliveryTab !== 'address' }"
+                  @click="deliveryTab = 'address'"
+                >
+                  <div :class="deliveryTab === 'address' ? 'tab-header' : 'tab-header-inactive'">
+                    <strong>ADRESE TESLİMAT</strong>
                   </div>
-
-                  <div class="addr-title">
-                    {{ addr.addressTitle || addr.district || 'ADRES' }}
+                  <div class="tab-sub">
+                    <span class="tag-black">ÜCRETSİZ</span>
+                    <span class="date-range">• 23 ARALIK - 27 ARALIK</span>
                   </div>
                 </div>
 
-                <div class="dots-menu-wrapper">
-                  <div class="dots-menu" @click="toggleMenu(addr.id)">
-                    <svg viewBox="0 0 2 9" width="4" height="18" fill="currentColor">
-                      <path fill-rule="evenodd" d="M2 1.167a1 1 0 1 1-2 0 1 1 0 1 1 2 0M2 4.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0M1 8.833a1 1 0 1 0 0-2 1 1 0 1 0 0 2"></path>
-                    </svg>
-                  </div>
-
-                  <div v-if="openMenuId === addr.id" class="menu-dropdown" @click.stop>
-                    <div class="menu-item" @click="editAddress(addr)">
-                      <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                      </svg>
-                      DÜZENLE
-                    </div>
-
-                    <div class="menu-item menu-item-delete" @click="openDeleteConfirm(addr.id)">
-                      <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                      SİL
-                    </div>
+                <div 
+                  class="tab-box"
+                  :class="{ active: deliveryTab === 'store', inactive: deliveryTab !== 'store' }"
+                  @click="deliveryTab = 'store'"
+                >
+                   <div :class="deliveryTab === 'store' ? 'tab-header' : 'tab-header-inactive'">
+                     <strong>MAĞAZADAN TESLİM</strong>
+                   </div>
+                  <div class="tab-sub">
+                    <span class="tag-black">ÜCRETSİZ</span>
+                    <span class="date-range">• 23 ARALIK - 27 ARALIK</span>
                   </div>
                 </div>
               </div>
 
-              <div class="addr-text">
-                {{ addr.addressDetails }}<br />
-                {{ addr.neighborhood }} {{ addr.district }} / {{ addr.city }}
+              <div class="panel-divider"></div>
+
+              <div v-if="deliveryTab === 'address'">
+                   <div class="checkout-box__title">TESLİMAT ADRESLERİM</div>
+
+                   <div class="checkout-box__content">
+                     <div class="address-grid">
+                       <div
+                         v-for="addr in savedAddresses"
+                         :key="addr.id"
+                         class="addr-card"
+                         :class="{ selected: selectedAddressId === addr.id }"
+                       >
+                         <div class="card-top">
+                           <div class="card-top-left">
+                             <div class="radio-circle" @click="selectAddress(addr.id)">
+                               <div class="dot" v-if="selectedAddressId === addr.id"></div>
+                             </div>
+                             <div class="addr-title">
+                               {{ addr.addressTitle || addr.district || 'ADRES' }}
+                             </div>
+                           </div>
+                           <div class="dots-menu-wrapper">
+                             <div class="dots-menu" @click="toggleMenu(addr.id)">
+                               <svg viewBox="0 0 2 9" width="4" height="18" fill="currentColor">
+                                 <path fill-rule="evenodd" d="M2 1.167a1 1 0 1 1-2 0 1 1 0 1 1 2 0M2 4.5a1 1 0 1 1-2 0 1 1 0 1 1 2 0M1 8.833a1 1 0 1 0 0-2 1 1 0 1 0 0 2"></path>
+                               </svg>
+                             </div>
+                             <div v-if="openMenuId === addr.id" class="menu-dropdown" @click.stop>
+                               <div class="menu-item" @click="editAddress(addr)">
+                                 <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                 </svg>
+                                 DÜZENLE
+                               </div>
+                               <div class="menu-item menu-item-delete" @click="openDeleteConfirm(addr.id)">
+                                 <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                   <polyline points="3 6 5 6 21 6"></polyline>
+                                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                 </svg>
+                                 SİL
+                               </div>
+                             </div>
+                           </div>
+                         </div>
+                         <div class="addr-text">
+                           {{ addr.addressDetails }}<br />
+                           {{ addr.neighborhood }} {{ addr.district }} / {{ addr.city }}
+                         </div>
+                         <div class="addr-name">{{ addr.firstName }} {{ addr.lastName }}</div>
+                       </div>
+                       <div class="addr-card-new" @click="openAddressModal">
+                         <div class="plus-icon">
+                           <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                             <path d="M8.805 0v8.805H0v2.391h8.805V20h2.391v-8.805H20v-2.39h-8.805V0z"></path>
+                           </svg>
+                         </div>
+                         <div class="new-text">YENİ ADRES EKLE</div>
+                       </div>
+                     </div>
+
+                     <div class="fatura-section">
+                       <div class="fatura-title">FATURA ADRESLERİM</div>
+                       <label class="custom-checkbox-container">
+                         <input type="checkbox" v-model="useSameAddress" />
+                         <span class="checkmark">
+                           <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 20 18">
+                             <path d="M7 11.25l-4-4.5-3 3.376L7 18 20 3.374 17 0z" fill="#fff" />
+                           </svg>
+                         </span>
+                         <span class="checkbox-label">Fatura adresi olarak da ekle</span>
+                       </label>
+                       <div class="fatura-info">
+                         <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="min-width:16px;">
+                           <path d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"></path>
+                         </svg>
+                         <span>FATURANIZ KAYITLI E-MAIL ADRESİNİZE GÖNDERİLECEKTİR.</span>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div class="checkout-box__sub-info">
+                       <span class="truck-icon">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="23" height="14" viewBox="0 0 23 14" fill="none">
+                           <g clip-path="url(#clip0_614_145320)">
+                           <path d="M22.2579 11.0353V9.60026C22.0686 9.58378 21.8911 9.57944 21.7189 9.55168C21.1502 9.46058 20.7581 9.06581 20.7509 8.52441C20.7338 7.3349 20.6229 7.38175 21.846 7.39303C21.9469 7.3939 22.0479 7.38001 22.1849 7.37047C22.02 6.9115 21.7009 6.646 21.2601 6.63819C19.8108 6.6113 18.3606 6.62778 16.8923 6.62778C16.8707 6.78829 16.8896 6.9488 16.8211 7.06159C16.7499 7.17959 16.5931 7.32535 16.4777 7.32188C16.365 7.31928 16.2217 7.16224 16.1559 7.0399C16.1001 6.93579 16.1316 6.78656 16.1316 6.65728C16.1307 4.84221 16.1316 3.02801 16.1316 1.21294V0.720128H2.23768C2.23768 0.865022 2.23768 1.01686 2.23768 1.16782C2.23768 3.01152 2.23768 4.85523 2.23768 6.69806C2.23768 6.82734 2.26833 6.97657 2.21155 7.08068C2.15206 7.19087 2.00785 7.31928 1.89608 7.32449C1.78342 7.32882 1.62569 7.21343 1.55899 7.10931C1.4968 7.01214 1.51843 6.85944 1.51843 6.73103C1.51663 4.80143 1.51572 2.87097 1.51843 0.941373C1.51663 0.24467 1.76809 0.000867624 2.48555 0C6.90384 0 11.323 0 15.7422 0C16.649 0 16.8455 0.188275 16.8554 1.06458C16.8563 1.1791 16.8554 1.29363 16.8554 1.4472C17.0059 1.45761 17.1348 1.47236 17.2628 1.47323C18.0118 1.47583 18.7608 1.46455 19.5098 1.47756C20.5355 1.49492 21.3782 2.35734 21.0402 3.26487C20.6905 4.20277 21.2692 4.91249 21.3476 5.73066C21.3566 5.82436 21.5242 5.93889 21.6423 5.98227C22.5436 6.31197 22.9943 6.92278 22.9979 7.86155C23.0015 8.97037 23.0006 10.0792 22.9979 11.1889C22.997 11.7173 22.9366 11.7711 22.3661 11.7745C22.083 11.7763 21.8009 11.7745 21.5278 11.7745C21.0961 13.3354 20.3543 14.0173 19.1366 14C17.9469 13.9826 17.2078 13.2773 16.8382 11.7945H8.81465C8.71911 12.5597 8.44601 13.2738 7.69971 13.6425C7.27969 13.8499 6.76324 13.987 6.29545 13.974C5.15888 13.941 4.41709 13.1367 4.16922 11.7754C3.63023 11.7754 3.08042 11.7763 2.52971 11.7754C1.74196 11.7737 1.51843 11.5585 1.51482 10.8002C1.51482 10.6466 1.51482 10.493 1.51482 10.2978C1.12184 10.2978 0.775736 10.3317 0.442246 10.2831C0.278205 10.2597 0.0366502 10.1052 0.00870916 9.97421C-0.0480743 9.71392 0.181763 9.60634 0.43774 9.60547C1.51663 9.60373 2.59551 9.58985 3.67259 9.62022C3.83393 9.62456 4.09261 9.81457 4.12416 9.95686C4.18545 10.2276 3.93758 10.3013 3.68341 10.2987C3.22193 10.2952 2.75955 10.2978 2.26743 10.2978V11.077C2.90376 11.077 3.55542 11.0848 4.20618 11.0674C4.2864 11.0648 4.38825 10.9399 4.43692 10.8505C4.87586 10.0532 5.56628 9.61415 6.49644 9.61588C7.42571 9.61848 8.11432 10.0575 8.55146 10.8575C8.60374 10.9529 8.73533 11.07 8.83087 11.0709C11.241 11.083 13.6512 11.0804 16.1289 11.0804C16.1289 10.3924 16.1289 9.73561 16.1289 9.07795C16.1289 8.89055 16.0874 8.68926 16.146 8.52094C16.1974 8.37344 16.3641 8.26326 16.4795 8.13658C16.6021 8.25892 16.8184 8.37344 16.8301 8.50532C16.8743 8.99119 16.8509 9.48314 16.8527 9.97248C16.8527 10.3325 16.8527 10.6935 16.8527 11.0535L16.9852 11.0726C17.0636 10.9433 17.1393 10.8132 17.2195 10.6848C18.0694 9.32176 20.1227 9.21938 21.015 10.5538C21.3458 11.0483 21.6784 11.1733 22.2561 11.0362L22.2579 11.0353ZM16.8806 5.8877H20.6166C20.5292 5.52677 20.4562 5.19533 20.3678 4.86737C20.2633 4.47954 20.2651 3.94335 20.001 3.75161C19.7189 3.54685 19.1808 3.6579 18.7536 3.6501C18.1325 3.63968 17.5106 3.64749 16.8563 3.64749C16.8563 4.33292 16.8554 4.9498 16.8572 5.56668C16.8572 5.66385 16.8707 5.76103 16.8806 5.8877ZM8.05844 11.7988C8.05393 10.9807 7.32386 10.29 6.47571 10.3022C5.61855 10.3135 4.91732 11.0102 4.93265 11.8335C4.94797 12.6396 5.651 13.3042 6.48923 13.3068C7.34549 13.3085 8.06295 12.6196 8.05844 11.7988ZM20.7419 11.7945C20.7347 10.9737 20.0046 10.2866 19.1564 10.3022C18.3191 10.3169 17.6224 10.9919 17.6152 11.7954C17.608 12.6153 18.3236 13.3076 19.179 13.3068C20.0352 13.3068 20.7491 12.6153 20.7419 11.7945ZM20.3264 2.93084C20.238 2.39811 20.0037 2.18555 19.4971 2.1734C19.0059 2.16212 18.5138 2.1708 18.0217 2.1708C17.6422 2.1708 17.2628 2.1708 16.8842 2.1708V2.93084H20.3255H20.3264ZM22.2417 8.8463V8.11923H21.5107C21.4188 8.77342 21.5531 8.90703 22.2417 8.8463Z" fill="#22242A"/>
+                           <path d="M8.79488 6.53395C9.78363 5.57783 10.712 4.67897 11.6404 3.78011C11.7251 3.69855 11.8134 3.62047 11.8945 3.53631C12.0775 3.34803 12.3155 3.21876 12.4948 3.45909C12.5768 3.56841 12.5074 3.86253 12.4047 4.00309C12.2163 4.25817 11.9513 4.45946 11.7188 4.68417C10.8715 5.49887 10.0198 6.30837 9.17974 7.13088C8.91385 7.39117 8.69393 7.40592 8.42443 7.13695C7.87372 6.58774 7.30679 6.05329 6.74256 5.51623C6.55689 5.33923 6.40907 5.14141 6.6308 4.92451C6.85162 4.70847 7.06343 4.83948 7.2473 5.02081C7.74754 5.51362 8.25138 6.00383 8.79398 6.53482L8.79488 6.53395Z" fill="#22242A"/>
+                           <path d="M12.2411 10.2957C11.4038 10.2957 10.5664 10.2939 9.7291 10.2965C9.46951 10.2965 9.22255 10.2679 9.23066 9.94774C9.23787 9.63627 9.48574 9.60156 9.74352 9.60156C11.4182 9.60156 13.0937 9.60156 14.7684 9.60156C15.0253 9.60156 15.2776 9.63106 15.2885 9.93994C15.3002 10.2913 15.0226 10.2965 14.754 10.2957C13.9166 10.2939 13.0793 10.2957 12.242 10.2957H12.2411Z" fill="#22242A"/>
+                           <path d="M3.42272 8.81996C2.71968 8.81996 2.01665 8.81823 1.31362 8.81996C1.04502 8.82083 0.768318 8.81302 0.775529 8.46511C0.781838 8.1545 1.03331 8.125 1.29109 8.125C2.71157 8.12674 4.13296 8.1276 5.55345 8.125C5.81573 8.125 6.0681 8.16751 6.07351 8.46511C6.07982 8.79741 5.80582 8.82343 5.53091 8.8217C4.82788 8.81649 4.12485 8.81996 3.42182 8.81996H3.42272Z" fill="#22242A"/>
+                           <path d="M7.24083 11.8255C7.22731 12.2099 6.86768 12.5361 6.472 12.5231C6.07452 12.511 5.73381 12.1639 5.74643 11.7848C5.75905 11.4013 6.11958 11.0733 6.51526 11.0863C6.91455 11.0985 7.25525 11.4455 7.24173 11.8255H7.24083Z" fill="#22242A"/>
+                           <path d="M19.1886 11.086C19.5869 11.0939 19.9322 11.4366 19.9249 11.8174C19.9168 12.1983 19.559 12.5315 19.1642 12.5246C18.7676 12.5176 18.4206 12.1723 18.4278 11.794C18.4351 11.4123 18.7938 11.0791 19.1886 11.086Z" fill="#22242A"/>
+                           </g>
+                           <defs>
+                           <clipPath id="clip0_614_145320">
+                           <rect width="23" height="14" fill="white"/>
+                           </clipPath>
+                           </defs>
+                           </svg>
+                       </span>
+                       <span>Tahmini teslimat, bulunduğunuz adrese göre 16 Aralık - 20 Aralık günleri arasında yapılacaktır. (Pazar günleri ve resmi tatiller hariçtir).</span>
+                   </div>
               </div>
 
-              <div class="addr-name">{{ addr.firstName }} {{ addr.lastName }}</div>
-            </div>
+              <div v-else class="store-pickup-content">
+                  <div class="store-form">
+                     <div class="store-field">
+                       <label>CEP TELEFONU NUMARASI</label>
+                       <input type="text" v-model="storeSearch.phone" placeholder="0(___) ___ __ __" class="store-input" />
+                     </div>
 
-            <div class="addr-card-new" @click="openAddressModal">
-              <div class="plus-icon">
-                <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-                  <path d="M8.805 0v8.805H0v2.391h8.805V20h2.391v-8.805H20v-2.39h-8.805V0z"></path>
-                </svg>
+                     <label class="store-label-title">TESLİMAT MAĞAZANIZI BULUN</label>
+                     <div class="store-search-row">
+                       <div class="store-select-wrapper">
+                          <select v-model="storeSearch.city" class="store-select">
+                            <option value="">İL</option>
+                            <option value="ISTANBUL">İSTANBUL</option>
+                            <option value="ANKARA">ANKARA</option>
+                          </select>
+                       </div>
+                       <div class="store-select-wrapper">
+                          <select v-model="storeSearch.district" class="store-select">
+                            <option value="">İLÇE</option>
+                            <option value="KADIKOY">KADIKÖY</option>
+                          </select>
+                       </div>
+                       <button class="store-search-btn">ARA</button>
+                     </div>
+
+                     <div class="fatura-section mt-4">
+                      <div class="fatura-title">FATURA ADRESLERİM</div>
+                      <label class="custom-checkbox-container">
+                        <input type="checkbox" />
+                        <span class="checkmark">
+                          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 20 18">
+                            <path d="M7 11.25l-4-4.5-3 3.376L7 18 20 3.374 17 0z" fill="#fff" />
+                          </svg>
+                        </span>
+                        <span class="checkbox-label" style="font-size: 13px; color:#555;">Fatura adresi ekle</span>
+                      </label>
+                    </div>
+
+                    <ul class="store-rules">
+                      <li>● MAĞAZADAN TESLİM AL YÖNTEMİYLE VERMİŞ OLDUĞUNUZ SİPARİŞLERİNİZ 24 SAATTE KARGODA HİZMETİ KAPSAMI DIŞINDADIR.SİPARİŞİNİZ MAĞAZAYA GELDİĞİNDE SİZE BİLGİLENDİRME MAİLİ VE SMS'İ GÖNDERİLİR. TESLİM ALACAK KİŞİ BİLGİSİNDE LÜTFEN GÜNCEL VE DOĞRU TELEFON NUMARANIZI PAYLAŞINIZ.SİPARİŞİNİZ MAĞAZAYA İLETİLDİKTEN SONRA İLGİLİ MAĞAZAYA GİDEREK SİPARİŞİNİZİ TESLİM ALABİLİRSİNİZ.</li>
+                      <li>● SİPARİŞİNİZİ TESLİM ALMAK İÇİN SMS İLE İLETTİĞİMİZ KISA KODU KASADA PAYLAŞMANIZ YETERLİDİR.</li>
+                      <li>● SİPARİŞİNİZİN MAĞAZADA BEKLEME SÜRESİ, SİPARİŞİN MAĞAZAYA TESLİMİNİ TAKİP EDEN 10 GÜNDÜR.</li>
+                    </ul>
+
+                     <div class="store-warning">
+                        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                          <path d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"></path>
+                        </svg>
+                        <span>MAĞAZADAN TESLİM AL YÖNTEMİYLE VERMİŞ OLDUĞUNUZ SİPARİŞLERİNİZ 24 SAATTE KARGODA HİZMETİ KAPSAMI DIŞINDADIR.</span>
+                     </div>
+                  </div>
               </div>
-              <div class="new-text">YENİ ADRES EKLE</div>
-            </div>
-          </div>
 
-          <!-- ✅ FATURA STILL INSIDE SAME BOX -->
-          <div class="fatura-section">
-            <div class="fatura-title">FATURA ADRESLERİM</div>
-
-            <label class="custom-checkbox-container">
-              <input type="checkbox" v-model="useSameAddress" />
-              <span class="checkmark">
-                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 20 18">
-                  <path d="M7 11.25l-4-4.5-3 3.376L7 18 20 3.374 17 0z" fill="#fff" />
-                </svg>
-              </span>
-              <span class="checkbox-label">Fatura adresi olarak da ekle</span>
-            </label>
-
-            <div class="fatura-info">
-              <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="min-width:16px;">
-                <path d="M10.003 11.165a.526.526 0 0 0 .526-.526V6.113a.526.526 0 1 0-1.053 0v4.527a.526.526 0 0 0 .526.526zm.002 3.248a.526.526 0 1 0 0-1.053h-.011a.526.526 0 1 0 0 1.053zM10 0a10 10 0 1 0 0 20 10 10 0 1 0 0-20m0 1.053a8.947 8.947 0 1 1 0 17.895 8.947 8.947 0 1 1 0-17.895"></path>
-              </svg>
-              <span>FATURANIZ KAYITLI E-MAIL ADRESİNİZE GÖNDERİLECEKTİR.</span>
-            </div>
-          </div>
-        </div>
-              <div class="checkout-box__sub-info">
-                <span class="truck-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="23" height="14" viewBox="0 0 23 14" fill="none">
-                    <g clip-path="url(#clip0_614_145320)">
-                    <path d="M22.2579 11.0353V9.60026C22.0686 9.58378 21.8911 9.57944 21.7189 9.55168C21.1502 9.46058 20.7581 9.06581 20.7509 8.52441C20.7338 7.3349 20.6229 7.38175 21.846 7.39303C21.9469 7.3939 22.0479 7.38001 22.1849 7.37047C22.02 6.9115 21.7009 6.646 21.2601 6.63819C19.8108 6.6113 18.3606 6.62778 16.8923 6.62778C16.8707 6.78829 16.8896 6.9488 16.8211 7.06159C16.7499 7.17959 16.5931 7.32535 16.4777 7.32188C16.365 7.31928 16.2217 7.16224 16.1559 7.0399C16.1001 6.93579 16.1316 6.78656 16.1316 6.65728C16.1307 4.84221 16.1316 3.02801 16.1316 1.21294V0.720128H2.23768C2.23768 0.865022 2.23768 1.01686 2.23768 1.16782C2.23768 3.01152 2.23768 4.85523 2.23768 6.69806C2.23768 6.82734 2.26833 6.97657 2.21155 7.08068C2.15206 7.19087 2.00785 7.31928 1.89608 7.32449C1.78342 7.32882 1.62569 7.21343 1.55899 7.10931C1.4968 7.01214 1.51843 6.85944 1.51843 6.73103C1.51663 4.80143 1.51572 2.87097 1.51843 0.941373C1.51663 0.24467 1.76809 0.000867624 2.48555 0C6.90384 0 11.323 0 15.7422 0C16.649 0 16.8455 0.188275 16.8554 1.06458C16.8563 1.1791 16.8554 1.29363 16.8554 1.4472C17.0059 1.45761 17.1348 1.47236 17.2628 1.47323C18.0118 1.47583 18.7608 1.46455 19.5098 1.47756C20.5355 1.49492 21.3782 2.35734 21.0402 3.26487C20.6905 4.20277 21.2692 4.91249 21.3476 5.73066C21.3566 5.82436 21.5242 5.93889 21.6423 5.98227C22.5436 6.31197 22.9943 6.92278 22.9979 7.86155C23.0015 8.97037 23.0006 10.0792 22.9979 11.1889C22.997 11.7173 22.9366 11.7711 22.3661 11.7745C22.083 11.7763 21.8009 11.7745 21.5278 11.7745C21.0961 13.3354 20.3543 14.0173 19.1366 14C17.9469 13.9826 17.2078 13.2773 16.8382 11.7945H8.81465C8.71911 12.5597 8.44601 13.2738 7.69971 13.6425C7.27969 13.8499 6.76324 13.987 6.29545 13.974C5.15888 13.941 4.41709 13.1367 4.16922 11.7754C3.63023 11.7754 3.08042 11.7763 2.52971 11.7754C1.74196 11.7737 1.51843 11.5585 1.51482 10.8002C1.51482 10.6466 1.51482 10.493 1.51482 10.2978C1.12184 10.2978 0.775736 10.3317 0.442246 10.2831C0.278205 10.2597 0.0366502 10.1052 0.00870916 9.97421C-0.0480743 9.71392 0.181763 9.60634 0.43774 9.60547C1.51663 9.60373 2.59551 9.58985 3.67259 9.62022C3.83393 9.62456 4.09261 9.81457 4.12416 9.95686C4.18545 10.2276 3.93758 10.3013 3.68341 10.2987C3.22193 10.2952 2.75955 10.2978 2.26743 10.2978V11.077C2.90376 11.077 3.55542 11.0848 4.20618 11.0674C4.2864 11.0648 4.38825 10.9399 4.43692 10.8505C4.87586 10.0532 5.56628 9.61415 6.49644 9.61588C7.42571 9.61848 8.11432 10.0575 8.55146 10.8575C8.60374 10.9529 8.73533 11.07 8.83087 11.0709C11.241 11.083 13.6512 11.0804 16.1289 11.0804C16.1289 10.3924 16.1289 9.73561 16.1289 9.07795C16.1289 8.89055 16.0874 8.68926 16.146 8.52094C16.1974 8.37344 16.3641 8.26326 16.4795 8.13658C16.6021 8.25892 16.8184 8.37344 16.8301 8.50532C16.8743 8.99119 16.8509 9.48314 16.8527 9.97248C16.8527 10.3325 16.8527 10.6935 16.8527 11.0535L16.9852 11.0726C17.0636 10.9433 17.1393 10.8132 17.2195 10.6848C18.0694 9.32176 20.1227 9.21938 21.015 10.5538C21.3458 11.0483 21.6784 11.1733 22.2561 11.0362L22.2579 11.0353ZM16.8806 5.8877H20.6166C20.5292 5.52677 20.4562 5.19533 20.3678 4.86737C20.2633 4.47954 20.2651 3.94335 20.001 3.75161C19.7189 3.54685 19.1808 3.6579 18.7536 3.6501C18.1325 3.63968 17.5106 3.64749 16.8563 3.64749C16.8563 4.33292 16.8554 4.9498 16.8572 5.56668C16.8572 5.66385 16.8707 5.76103 16.8806 5.8877ZM8.05844 11.7988C8.05393 10.9807 7.32386 10.29 6.47571 10.3022C5.61855 10.3135 4.91732 11.0102 4.93265 11.8335C4.94797 12.6396 5.651 13.3042 6.48923 13.3068C7.34549 13.3085 8.06295 12.6196 8.05844 11.7988ZM20.7419 11.7945C20.7347 10.9737 20.0046 10.2866 19.1564 10.3022C18.3191 10.3169 17.6224 10.9919 17.6152 11.7954C17.608 12.6153 18.3236 13.3076 19.179 13.3068C20.0352 13.3068 20.7491 12.6153 20.7419 11.7945ZM20.3264 2.93084C20.238 2.39811 20.0037 2.18555 19.4971 2.1734C19.0059 2.16212 18.5138 2.1708 18.0217 2.1708C17.6422 2.1708 17.2628 2.1708 16.8842 2.1708V2.93084H20.3255H20.3264ZM22.2417 8.8463V8.11923H21.5107C21.4188 8.77342 21.5531 8.90703 22.2417 8.8463Z" fill="#22242A"/>
-                    <path d="M8.79488 6.53395C9.78363 5.57783 10.712 4.67897 11.6404 3.78011C11.7251 3.69855 11.8134 3.62047 11.8945 3.53631C12.0775 3.34803 12.3155 3.21876 12.4948 3.45909C12.5768 3.56841 12.5074 3.86253 12.4047 4.00309C12.2163 4.25817 11.9513 4.45946 11.7188 4.68417C10.8715 5.49887 10.0198 6.30837 9.17974 7.13088C8.91385 7.39117 8.69393 7.40592 8.42443 7.13695C7.87372 6.58774 7.30679 6.05329 6.74256 5.51623C6.55689 5.33923 6.40907 5.14141 6.6308 4.92451C6.85162 4.70847 7.06343 4.83948 7.2473 5.02081C7.74754 5.51362 8.25138 6.00383 8.79398 6.53482L8.79488 6.53395Z" fill="#22242A"/>
-                    <path d="M12.2411 10.2957C11.4038 10.2957 10.5664 10.2939 9.7291 10.2965C9.46951 10.2965 9.22255 10.2679 9.23066 9.94774C9.23787 9.63627 9.48574 9.60156 9.74352 9.60156C11.4182 9.60156 13.0937 9.60156 14.7684 9.60156C15.0253 9.60156 15.2776 9.63106 15.2885 9.93994C15.3002 10.2913 15.0226 10.2965 14.754 10.2957C13.9166 10.2939 13.0793 10.2957 12.242 10.2957H12.2411Z" fill="#22242A"/>
-                    <path d="M3.42272 8.81996C2.71968 8.81996 2.01665 8.81823 1.31362 8.81996C1.04502 8.82083 0.768318 8.81302 0.775529 8.46511C0.781838 8.1545 1.03331 8.125 1.29109 8.125C2.71157 8.12674 4.13296 8.1276 5.55345 8.125C5.81573 8.125 6.0681 8.16751 6.07351 8.46511C6.07982 8.79741 5.80582 8.82343 5.53091 8.8217C4.82788 8.81649 4.12485 8.81996 3.42182 8.81996H3.42272Z" fill="#22242A"/>
-                    <path d="M7.24083 11.8255C7.22731 12.2099 6.86768 12.5361 6.472 12.5231C6.07452 12.511 5.73381 12.1639 5.74643 11.7848C5.75905 11.4013 6.11958 11.0733 6.51526 11.0863C6.91455 11.0985 7.25525 11.4455 7.24173 11.8255H7.24083Z" fill="#22242A"/>
-                    <path d="M19.1886 11.086C19.5869 11.0939 19.9322 11.4366 19.9249 11.8174C19.9168 12.1983 19.559 12.5315 19.1642 12.5246C18.7676 12.5176 18.4206 12.1723 18.4278 11.794C18.4351 11.4123 18.7938 11.0791 19.1886 11.086Z" fill="#22242A"/>
-                    </g>
-                    <defs>
-                    <clipPath id="clip0_614_145320">
-                    <rect width="23" height="14" fill="white"/>
-                    </clipPath>
-                    </defs>
-                    </svg>
-                </span>
-                <span>Tahmini teslimat, bulunduğunuz adrese göre 16 Aralık - 20 Aralık günleri arasında yapılacaktır. (Pazar günleri ve resmi tatiller hariçtir).</span>
-              </div>
             </div>
           </div>
 
           <div v-if="step === 2">
-            <div class="checkout-box">
-              <div class="checkout-box__title">Kredi / Banka Kartı</div>
-              <div class="checkout-box__content">
-                <div class="payment-form">
-                  <div class="custom-input">
-                    <input type="text" placeholder="0000 0000 0000 0000" class="input" />
-                    <label class="label">Kart Numarası</label>
-                  </div>
-
-                  <div class="payment-form-row">
+              <div class="checkout-box">
+                <div class="checkout-box__title">Kredi / Banka Kartı</div>
+                <div class="checkout-box__content">
+                  <div class="payment-form">
                     <div class="custom-input">
-                      <input type="text" placeholder="Ay / Yıl" class="input" />
-                      <label class="label">Son Kullanma Tarihi</label>
+                      <input type="text" placeholder="0000 0000 0000 0000" class="input" />
+                      <label class="label">Kart Numarası</label>
                     </div>
-                    <div class="custom-input">
-                      <input type="text" placeholder="***" class="input" />
-                      <label class="label">CVV</label>
-                    </div>
-                  </div>
 
-                  <label class="checkbox-row">
-                    <input type="checkbox" checked class="checkbox" />
-                    <span style="font-size: 12px">3D Secure ile ödemek istiyorum.</span>
-                  </label>
+                    <div class="payment-form-row">
+                      <div class="custom-input">
+                        <input type="text" placeholder="Ay / Yıl" class="input" />
+                        <label class="label">Son Kullanma Tarihi</label>
+                      </div>
+                      <div class="custom-input">
+                        <input type="text" placeholder="***" class="input" />
+                        <label class="label">CVV</label>
+                      </div>
+                    </div>
+
+                    <label class="checkbox-row">
+                      <input type="checkbox" checked class="checkbox" />
+                      <span style="font-size: 12px">3D Secure ile ödemek istiyorum.</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
         </div>
 
         <aside class="checkout__summary">
@@ -547,17 +617,10 @@ const placeOrder = async () => {
               </span>
               <span class="summary-bold">ÜCRETSİZ</span>
             </div>
-            <div class="summary-item">
+            
+            <div class="summary-item" v-if="discount > 0">
               <span>TOPLAM İNDİRİM</span>
               <span class="summary-bold" style="color: #000">-{{ discount }} TL</span>
-            </div>
-
-            <div class="earnings-box" @click="showEarnings = !showEarnings">
-              <span class="earnings-title">TOPLAM KAZANÇ</span>
-              <div class="earnings-right">
-                <span class="earnings-amount">↗+{{ earnings.toFixed(2) }} TL</span>
-                <span class="earnings-arrow">{{ showEarnings ? '∧' : '∨' }}</span>
-              </div>
             </div>
 
             <div class="total-section">
@@ -764,13 +827,11 @@ const placeOrder = async () => {
 /* HEADER */
 .checkout-header {
   background-color: #f8f8f9;
-  border-bottom: 1px solid #e7eaf0;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  box-shadow: 0 1px 1px #e7eaf0;
 }
 
 .header__container {
@@ -1375,40 +1436,6 @@ const placeOrder = async () => {
   font-size: 12px;
 }
 
-/* EARNINGS BOX */
-.earnings-box {
-  background: #f8f8f9;
-  padding: 12px 16px;
-  margin: 0 -16px 20px -16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.earnings-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #22242a;
-}
-
-.earnings-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.earnings-amount {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0aca6e;
-}
-
-.earnings-arrow {
-  font-size: 12px;
-  color: #22242a;
-}
-
 /* TOTAL SECTION */
 .total-section {
   display: flex;
@@ -1798,6 +1825,119 @@ const placeOrder = async () => {
     height: auto;
     display: block;
     margin: 0 auto; /* ضمان التوسيط */
+}
+
+/* --- ستايلات صفحة الاستلام من المتجر الجديدة --- */
+.store-pickup-content {
+  padding: 32px;
+}
+
+.store-field {
+  margin-bottom: 25px;
+}
+
+.store-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #22242a;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.store-input {
+  width: 100%;
+  max-width:200px;
+  border: none;
+  border-bottom: 1px solid #000000;
+  padding: 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  outline: none;
+  border-radius: 0;
+}
+
+.store-label-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #22242a;
+  margin-bottom: 13px;
+  margin-top: 20px;
+  text-transform: uppercase;
+}
+
+.store-search-row {
+  display: flex;
+  gap: 70px;
+  align-items: flex-end;
+  margin-bottom: 30px;
+}
+
+.store-select-wrapper {
+  flex: 1;
+  border-bottom: 1px solid #000000;
+}
+
+.store-select {
+  width: 100%;
+  border: none;
+  padding: 10px 0;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+  cursor: default;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.store-search-btn {
+  width: 200px;
+  height: 38px;
+  background-color: #908E97;
+  color: #d1cfcf;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: default;
+  text-transform: uppercase;
+}
+
+.store-rules {
+  list-style: none;
+  padding: 0;
+  margin: 30px 0;
+  font-size: 12px;
+  color: #22242a;
+  line-height: 1.6;
+}
+
+.store-rules li {
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.store-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 10px;
+  color: #666;
+  background: #fcfcfc;
+  padding: 10px;
+  text-transform: uppercase;
+}
+
+.mt-4 { margin-top: 20px; }
+
+@media (max-width: 600px) {
+  .store-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .store-search-btn {
+    width: 100%;
+  }
 }
 
 /* RESPONSIVE */
