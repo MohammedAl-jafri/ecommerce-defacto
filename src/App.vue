@@ -30,6 +30,8 @@ const isProducts = computed(
   () => route.name === 'products' || route.path.startsWith('/products')
 )
 
+const isProfile = computed(() => route.name === 'profile' || route.path === '/profile')
+
 const isHome = computed(() => route.name === 'home' || route.path === '/' || route.path.startsWith('/home'))
 
 const isFavorites = computed(() => route.name === 'favorites' || route.path === '/favorites')
@@ -47,7 +49,8 @@ const isFullPage = computed(
     isProducts.value ||
     isHome.value ||
     isFavorites.value ||
-    isProductDetail.value
+    isProductDetail.value ||
+    isProfile.value
 )
 </script>
 

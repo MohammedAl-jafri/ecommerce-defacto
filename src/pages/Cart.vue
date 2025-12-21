@@ -123,7 +123,7 @@ const chooseSize = (size) => {
         BİNLERCE DEFACTO ÜRÜNÜ SENİ BEKLİYOR.<br>
         AŞAĞIDAKİ ÖNERİLERİ İNCELEYEREK HEMEN ALIŞVERİŞE BAŞLAYABİLİR YA DA KATEGORİ LİNKLERİYLE DEFACTO’YU KEŞFEDEBİLİRSİN..
       </p>
-      <RouterLink to="/" class="button button--big button--black mt-4">ANASAYFAYA GİT</RouterLink>
+      <RouterLink to="home" class="button button--big button--black mt-4">ANASAYFAYA GİT</RouterLink>
     </div>
 
     <div v-else class="container shopping__container">

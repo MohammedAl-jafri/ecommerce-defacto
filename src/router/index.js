@@ -86,8 +86,19 @@ const router = createRouter({
 // ❗  lowercase
 const ADMIN_EMAIL = 'admin@defacto.com'
 
-router.beforeEach((to, from, next) => {
-  const currentUser = auth.currentUser
+import { onAuthStateChanged } from 'firebase/auth'
+
+const getCurrentUser = () =>
+  new Promise((resolve) => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      unsub()
+      resolve(user)
+    })
+  })
+
+
+router.beforeEach(async (to, from, next) => {
+  const currentUser = await getCurrentUser()
 
   console.log('currentUser in guard =', currentUser?.email)
 
@@ -98,13 +109,14 @@ router.beforeEach((to, from, next) => {
     })
   }
 
-  //  admin
+  // admin
   if (to.meta.requiresAdmin) {
     if (!currentUser) {
       return next({ name: 'login', query: { redirect: to.fullPath } })
     }
 
     const userEmail = (currentUser.email || '').toLowerCase().trim()
+    const ADMIN_EMAIL = 'admin@defacto.com'
 
     if (userEmail !== ADMIN_EMAIL) {
       return next({ name: 'components' })
@@ -113,5 +125,6 @@ router.beforeEach((to, from, next) => {
 
   next()
 })
+
 
 export default router
