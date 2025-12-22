@@ -4,8 +4,8 @@ import { ref, computed, onMounted } from 'vue'
 defineOptions({ name: 'ComponentsList' })
 
 // 🔹 ORIGINAL components/pages
-import HeaderBar from '../components/HeaderBar.vue'
-import FooterBar from '../components/FooterBar.vue'
+import HeaderBar from '../components/organisms/HeaderBar.vue'
+import FooterBar from '../components/organisms/FooterBar.vue'
 import Home from './Home.vue'
 import Products from './Products.vue'
 import Cart from './Cart.vue'

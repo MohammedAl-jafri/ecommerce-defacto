@@ -7,6 +7,8 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCart } from '../stores/useCart'
 import { useToast } from '../stores/useToast'
+import ProductsGrid from '../components/organisms/ProductsGrid.vue'
+
 
 
 const cart = useCart()
@@ -230,20 +232,11 @@ const chooseSize = (size) => {
       </button>
     </div>
 
-<div class="grid" v-if="filtered.length">
-  <ProductCard
-    v-for="p in filtered"
-    :key="p.id"
-    :item="p"
-    @detail="goToDetail"
-    @pickSize="onPickSize"
-  />
-</div>
-
-
-    <p v-else class="empty-text">
-      Filtrelere uygun ürün bulunamadı.
-    </p>
+<ProductsGrid
+  :items="filtered"
+  @detail="goToDetail"
+  @pickSize="onPickSize"
+/>
 
      <transition name="filters-fade">
       <div
@@ -1379,23 +1372,4 @@ const chooseSize = (size) => {
   }
 }
 
-
-/* استجابة بسيطة للشاشات الصغيرة */
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 8px;
-    padding: 0 12px;
-  }
-
-  .filters-panel {
-    width: 100%;
-  }
-}
 </style>

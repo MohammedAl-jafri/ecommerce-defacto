@@ -2,8 +2,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
-import HeaderBar from './components/HeaderBar.vue'
-import FooterBar from './components/FooterBar.vue'
+import HeaderBar from './components/organisms/HeaderBar.vue'
+import FooterBar from './components/organisms/FooterBar.vue'
 import CartToast from './components/CartToast.vue'
 
 const route = useRoute()

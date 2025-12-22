@@ -2,8 +2,10 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import useAuth from '../stores/useAuth'
-import { useCart } from '../stores/useCart'
+import useAuth from '../../stores/useAuth'
+import { useCart } from '../../stores/useCart'
+import SearchIcon from '../atoms/SearchIcon.vue'
+
 
 const toggleMenu = () => {
   console.log('menu clicked')
@@ -87,29 +89,8 @@ const handleLogout = async () => {
       <div class="df-middle">
         <div class="df-search-wrap" @click="searchOpen = true">
           <span class="df-search-icon">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              class="df-search-svg"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="7.3"
-                cy="7.3"
-                r="6.3"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M12.2002 12.2L15.0002 15"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <SearchIcon :size="16" />
+
           </span>
 
           <input
@@ -169,29 +150,7 @@ const handleLogout = async () => {
         </button>
 
         <span class="df-search-icon">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            class="df-search-svg"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              cx="7.3"
-              cy="7.3"
-              r="6.3"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M12.2002 12.2L15.0002 15"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <SearchIcon :size="16" />
         </span>
 
         <input
@@ -338,12 +297,6 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.df-search-svg {
-  width: 16px;
-  height: 16px;
-  color: #22242a;
 }
 
 .df-search-wrap input {

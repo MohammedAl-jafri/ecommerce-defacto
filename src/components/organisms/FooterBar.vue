@@ -1,5 +1,8 @@
 <!-- src/components/FooterBar.vue -->
 <script setup>
+import BenefitItem from '../molecules/BenefitItem.vue'
+import SocialIconButton from '../molecules/SocialIconButton.vue'
+
 const onBenefitClick = (type) => {
   console.log('Benefit clicked:', type)
 }
@@ -18,15 +21,13 @@ const onChangeCountry = () => {
     <!-- TOP BENEFITS ROW (icons) -->
     <section class="df-benefits">
       <div class="df-container df-benefits-row">
-        <!-- 1) MAĞAZADAN TESLİM AL -->
-        <button
-          class="benefit-item"
-          type="button"
-          @click="onBenefitClick('store')"
-        >
-          <div class="benefit-icon">
-            <!-- SVG MAĞAZADAN TESLİM AL -->
-            <svg
+<BenefitItem
+  title="MAĞAZADAN TESLİM AL"
+  sub="KARGO BEDAVA"
+  @click="onBenefitClick('store')"
+>
+  <template #icon>            
+                            <svg
               xmlns="http://www.w3.org/2000/svg"
               width="45"
               height="40"
@@ -40,22 +41,16 @@ const onChangeCountry = () => {
                 fill="#22242A"
               />
             </svg>
-          </div>
-          <div class="benefit-text">
-            <div class="benefit-title">MAĞAZADAN TESLİM AL</div>
-            <div class="benefit-sub">KARGO BEDAVA</div>
-          </div>
-        </button>
+  </template>
+</BenefitItem>
 
-        <!-- 2) KAPIDA ÖDEME -->
-        <button
-          class="benefit-item"
-          type="button"
-          @click="onBenefitClick('cash')"
-        >
-          <div class="benefit-icon">
-            <!-- SVG KAPIDA ÖDEME -->
-            <svg
+<BenefitItem
+  title="KAPIDA ÖDEME"
+  sub="HİZMET BEDELİ SADECE 39,99 TL"
+  @click="onBenefitClick('cash')"
+>
+  <template #icon>            
+                            <svg
               xmlns="http://www.w3.org/2000/svg"
               width="40"
               height="40"
@@ -78,22 +73,16 @@ const onChangeCountry = () => {
                 </clipPath>
               </defs>
             </svg>
-          </div>
-          <div class="benefit-text">
-            <div class="benefit-title">KAPIDA ÖDEME</div>
-            <div class="benefit-sub">HİZMET BEDELİ SADECE 39,99 TL</div>
-          </div>
-        </button>
+  </template>
+</BenefitItem>
 
-        <!-- 3) MAĞAZADA DEĞİŞİM&İADE -->
-        <button
-          class="benefit-item"
-          type="button"
-          @click="onBenefitClick('change')"
-        >
-          <div class="benefit-icon">
-            <!-- SVG MAĞAZADA DEĞİŞİM&İADE -->
-            <svg
+        <BenefitItem
+  title="MAĞAZADA DEĞİŞİM&İADE"
+  sub="ONLINE AL MAĞAZADA DEĞİŞTİR"
+  @click="onBenefitClick('change')"
+>
+  <template #icon>            
+                            <svg
               xmlns="http://www.w3.org/2000/svg"
               width="51"
               height="40"
@@ -119,22 +108,16 @@ const onChangeCountry = () => {
                 fill="#22242A"
               />
             </svg>
-          </div>
-          <div class="benefit-text">
-            <div class="benefit-title">MAĞAZADA DEĞİŞİM&İADE</div>
-            <div class="benefit-sub">ONLINE AL MAĞAZADA DEĞİŞTİR</div>
-          </div>
-        </button>
+  </template>
+</BenefitItem>
 
-        <!-- 4) ÜCRETSİZ İADE -->
-        <button
-          class="benefit-item"
-          type="button"
-          @click="onBenefitClick('free-return')"
-        >
-          <div class="benefit-icon">
-            <!-- SVG ÜCRETSİZ İADE -->
-            <svg
+<BenefitItem
+  title="ÜCRETSİZ İADE"
+  sub="30 GÜN İÇERİSİNDE İADE ET"
+  @click="onBenefitClick('free-return')"
+>
+  <template #icon>            
+                            <svg
               xmlns="http://www.w3.org/2000/svg"
               width="43"
               height="40"
@@ -155,22 +138,16 @@ const onChangeCountry = () => {
                 </clipPath>
               </defs>
             </svg>
-          </div>
-          <div class="benefit-text">
-            <div class="benefit-title">ÜCRETSİZ İADE</div>
-            <div class="benefit-sub">30 GÜN İÇERİSİNDE İADE ET</div>
-          </div>
-        </button>
+  </template>
+</BenefitItem>
 
-        <!-- 5) DEFACTO GIFT CLUB -->
-        <button
-          class="benefit-item"
-          type="button"
-          @click="onBenefitClick('gift-club')"
-        >
-          <div class="benefit-icon">
-            <!-- SVG DEFACTO GIFT CLUB -->
-            <svg
+<BenefitItem
+  title="DEFACTO GIFT CLUB"
+  sub="AYRICALIKLARLA YENİLEN, EĞLEN, DEVAM ET!"
+  @click="onBenefitClick('gift-club')"
+>
+  <template #icon>            
+                            <svg
               xmlns="http://www.w3.org/2000/svg"
               width="44"
               height="44"
@@ -230,14 +207,9 @@ const onChangeCountry = () => {
                 </clipPath>
               </defs>
             </svg>
-          </div>
-          <div class="benefit-text">
-            <div class="benefit-title">DEFACTO GIFT CLUB</div>
-            <div class="benefit-sub">
-              AYRICALIKLARLA YENİLEN, EĞLEN, DEVAM ET!
-            </div>
-          </div>
-        </button>
+  </template>
+</BenefitItem>
+
       </div>
     </section>
 
@@ -317,81 +289,50 @@ const onChangeCountry = () => {
           </h4>
 
           <div class="social-row">
-            <!-- WhatsApp -->
-            <button
-              class="social-btn"
-              type="button"
-              aria-label="WhatsApp"
-              @click="onSocialClick('whatsapp')"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+<SocialIconButton ariaLabel="WhatsApp" @click="onSocialClick('whatsapp')">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path
                   fill="#ffffff"
                   d="M380.9 97.1c-41.9-42-97.7-65.1-157-65.1-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480 117.7 449.1c32.4 17.7 68.9 27 106.1 27l.1 0c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3 18.6-68.1-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1s56.2 81.2 56.1 130.5c0 101.8-84.9 184.6-186.6 184.6zM325.1 300.5c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8s-14.3 18-17.6 21.8c-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7s-12.5-30.1-17.1-41.2c-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2s-9.7 1.4-14.8 6.9c-5.1 5.6-19.4 19-19.4 46.3s19.9 53.7 22.6 57.4c2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4s4.6-24.1 3.2-26.4c-1.3-2.5-5-3.9-10.5-6.6z"
                 />
               </svg>
-            </button>
+            </SocialIconButton>
 
-            <!-- Facebook -->
-            <button
-              class="social-btn"
-              type="button"
-              aria-label="Facebook"
-              @click="onSocialClick('facebook')"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+<SocialIconButton ariaLabel="Facebook" @click="onSocialClick('facebook')">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
                 <path
                   fill="#ffffff"
                   d="M80 299.3l0 212.7 116 0 0-212.7 86.5 0 18-97.8-104.5 0 0-34.6c0-51.7 20.3-71.5 72.7-71.5 16.3 0 29.4 .4 37 1.2l0-88.7C291.4 4 256.4 0 236.2 0 129.3 0 80 50.5 80 159.4l0 42.1-66 0 0 97.8 66 0z"
                 />
               </svg>
-            </button>
+            </SocialIconButton>
 
-            <!-- X -->
-            <button
-              class="social-btn"
-              type="button"
-              aria-label="X"
-              @click="onSocialClick('x')"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+            <SocialIconButton ariaLabel="X" @click="onSocialClick('x')">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path
                   fill="#ffffff"
                   d="M357.2 48L427.8 48 273.6 224.2 455 464 313 464 201.7 318.6 74.5 464 3.8 464 168.7 275.5-5.2 48 140.4 48 240.9 180.9 357.2 48zM332.4 421.8l39.1 0-252.4-333.8-42 0 255.3 333.8z"
                 />
               </svg>
-            </button>
+            </SocialIconButton>
 
-<!-- Instagram -->
-<button
-  class="social-btn"
-  type="button"
-  aria-label="Instagram"
-  @click="onSocialClick('instagram')"
->
+            <SocialIconButton ariaLabel="Instagram" @click="onSocialClick('instagram')">
   <svg xmlns="http://www.w3.org/2000/svg"
        viewBox="0 0 24 24"
        width="18" height="18"
        fill="#ffffff">
     <path d="M15.574 0H8.426C6.192.003 4.049.891 2.47 2.47S.003 6.192 0 8.426v7.149c.003 2.234.891 4.376 2.47 5.955S6.192 23.997 8.426 24h7.149A8.433 8.433 0 0 0 24 15.575V8.426A8.44 8.44 0 0 0 15.574 0M12 17.586A5.58 5.58 0 0 1 6.413 12 5.58 5.58 0 0 1 12 6.413 5.58 5.58 0 0 1 17.586 12 5.6 5.6 0 0 1 12 17.586m7.164-10.912a1 1 0 0 1-.153.128 1 1 0 0 1-.179.092.8.8 0 0 1-.189.056 1 1 0 0 1-.199.02 1.1 1.1 0 0 1-.393-.077 1 1 0 0 1-.174-.092 1.3 1.3 0 0 1-.158-.128 1.04 1.04 0 0 1-.22-1.113 1 1 0 0 1 .092-.179 1 1 0 0 1 .128-.153 1.3 1.3 0 0 1 .158-.128 1 1 0 0 1 .174-.092 1.3 1.3 0 0 1 .194-.061 1.02 1.02 0 0 1 .919.281q.072.07.128.153c.056.083.07.116.097.179a1 1 0 0 1 .056.189 1.3 1.3 0 0 1 .02.199c.001.272-.107.534-.301.725zM12 7.945c-1.64 0-3.119.988-3.745 2.503s-.281 3.258.878 4.418 2.904 1.506 4.418.878S16.054 13.64 16.054 12A4.06 4.06 0 0 0 12 7.945m-.495 2.64A1.5 1.5 0 0 0 10.499 12a.766.766 0 0 1-1.532 0 3.03 3.03 0 0 1 2.032-2.86.765.765 0 0 1 .505 1.445z"/>
   </svg>
-</button>
+            </SocialIconButton>
 
-
-            <!-- TikTok -->
-            <button
-              class="social-btn"
-              type="button"
-              aria-label="TikTok"
-              @click="onSocialClick('tiktok')"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+            <SocialIconButton ariaLabel="TikTok" @click="onSocialClick('tiktok')">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
                 <path
                   fill="#ffffff"
                   d="M448.5 209.9c-44 .1-87-13.6-122.8-39.2l0 178.7c0 33.1-10.1 65.4-29 92.6s-45.6 48-76.6 59.6-64.8 13.5-96.9 5.3-60.9-25.9-82.7-50.8-35.3-56-39-88.9 2.9-66.1 18.6-95.2 40-52.7 69.6-67.7 62.9-20.5 95.7-16l0 89.9c-15-4.7-31.1-4.6-46 .4s-27.9 14.6-37 27.3-14 28.1-13.9 43.9 5.2 31 14.5 43.7 22.4 22.1 37.4 26.9 31.1 4.8 46-.1 28-14.4 37.2-27.1 14.2-28.1 14.2-43.8l0-349.4 88 0c-.1 7.4 .6 14.9 1.9 22.2 3.1 16.3 9.4 31.9 18.7 45.7s21.3 25.6 35.2 34.6c19.9 13.1 43.2 20.1 67 20.1l0 87.4z"
                 />
               </svg>
-            </button>
+            </SocialIconButton>
           </div>
 
           <button class="country-btn" type="button" @click="onChangeCountry">
@@ -450,7 +391,6 @@ const onChangeCountry = () => {
   margin: 0 auto;
 }
 
-/* ===== TOP BENEFITS ===== */
 .df-benefits {
   padding: 22px 0 20px;
 }
@@ -462,49 +402,6 @@ const onChangeCountry = () => {
   flex-wrap: nowrap;
 }
 
-.benefit-item {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  text-align: left;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer; /* لا إصبع على الفراغ */
-}
-
-
-.benefit-icon {
-  width: 45px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.benefit-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.benefit-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.benefit-sub {
-  font-size: 12px;
-  color: #22242a;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* ===== MAIN FOOTER ===== */
 .df-main-footer {
   padding: 26px 0 24px;
 }
@@ -535,7 +432,6 @@ const onChangeCountry = () => {
   letter-spacing: 0.04em;
 }
 
-/* الكلك والإصبع فقط على النص نفسه */
 .col-title-text {
   cursor: pointer;
   display: inline;
@@ -565,7 +461,6 @@ const onChangeCountry = () => {
   color: #585562;
 }
 
-/* Bize Ulaşın support block */
 .support-block {
   margin-top: 12px;
 }
@@ -584,7 +479,6 @@ const onChangeCountry = () => {
   text-transform: uppercase;
 }
 
-/* Social */
 .col-social .social-row {
   display: flex;
   flex-wrap: nowrap;
@@ -592,47 +486,25 @@ const onChangeCountry = () => {
   margin-bottom: 1px;
 }
 
-/* خلفية سوداء مربعة – نفس الأصل */
-.social-btn {
-  width: 60px;
-  height: 50px;
-  border: none;
-  background: #000000;
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-
-/* توحيد حجم الـ SVG داخل الأزرار */
-.social-btn svg {
-  width: 22px;
-  height: 25px;
-  display: block;
-}
-
-/* Country button */
 .country-btn {
   margin-top: 12px;
   padding: 8px 0px;
   border: none;
   background: transparent;
-  display: inline-flex; /* مهم جداً للمحاذاة */
-  align-items: center;    /* لضمان توسيط الأيقونة مع النص عمودياً */
-  gap: 6px;               /* مسافة بين الأيقونة والنص */
+  display: inline-flex; 
+  align-items: center;    
+  gap: 6px;               
   font-size: 14px;
   text-transform: uppercase;
-  color: #111;            /* لون النص والأيقونة الافتراضي */
+  color: #111;            
   cursor: default;
 }
 
 .globe-icon {
-  width: 21px;            /* حجم الأيقونة المناسب */
+  width: 21px;            
   height: 21px;
-  fill: currentColor;     /* يجعل الأيقونة تأخذ نفس لون النص */
-  margin-bottom: 1px;     /* تعديل بسيط لرفع الأيقونة قليلاً لتوازي النص */
+  fill: currentColor;     
+  margin-bottom: 1px;    
   pointer-events: none;
 }
 
@@ -645,7 +517,6 @@ const onChangeCountry = () => {
   color: #585562;
 }
 
-/* Copy row */
 .df-copy-row {
   margin-top: 20px;
   border-top: 1px solid #e5e7eb;

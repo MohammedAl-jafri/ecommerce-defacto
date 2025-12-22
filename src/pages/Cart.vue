@@ -2,6 +2,10 @@
 import { ref, computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '../stores/useCart'
+import { useFavorites } from '../stores/useFavorites'
+import CartItemCard from '../components/organisms/CartItemCard.vue'
+import SizePickerModal from '../components/molecules/SizePickerModal.vue'
+import DeleteConfirmModal from '../components/molecules/DeleteConfirmModal.vue'
 
 const router = useRouter()
 
@@ -12,9 +16,7 @@ const goToDetail = (item) => {
   router.push(`/product/${pid}`)
 }
 
-const goFavorites = () => {
-  router.push('/favorites')
-}
+
 
 const goBack = () => {
   if (window.history.length > 1) router.back()
@@ -23,6 +25,7 @@ const goBack = () => {
 
 const { items, total, updateQty, removeFromCart, setItemSize, isSizedCategory } = useCart()
 
+const favStore = useFavorites()
 
 const showModal = ref(false)
 const itemToDelete = ref(null)
@@ -40,7 +43,12 @@ const closeModal = () => {
 const confirmDelete = (addToFavorites) => {
   if (itemToDelete.value) {
     if (addToFavorites) {
-      console.log(`تمت إضافة المنتج ${itemToDelete.value.id} للمفضلة`)
+     if (!favStore.isFav(itemToDelete.value)) {
+         favStore.toggleFavorite(itemToDelete.value)
+         console.log(`تمت إضافة المنتج ${itemToDelete.value.id} للمفضلة`)
+      } else {
+         console.log(`المنتج ${itemToDelete.value.id} موجود بالفعل في المفضلة`)
+      }
     }
     removeFromCart(itemToDelete.value.key || itemToDelete.value.id)
   }
@@ -139,12 +147,12 @@ const chooseSize = (size) => {
              </span> 
              <span>SEPETİM ({{ items.length }} ÜRÜN)</span>
            </div>
-           <button class="shopping__header--favorite glow-effect" type="button" @click="goFavorites">
+           <RouterLink to="/favorites" class="shopping__header--favorite glow-effect">
              <svg viewBox="0 0 20 18" width="19" height="18" style="margin-right:5px;">
                <path fill="currentColor" d="M5.197 0a5.06 5.06 0 0 0-3.69 1.6c-2.009 2.13-2.007 5.497 0 7.629l8.101 8.606a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l8.109-8.599c2.009-2.13 2.009-5.498 0-7.629a5.06 5.06 0 0 0-7.381 0L10 2.785 8.887 1.6A5.06 5.06 0 0 0 5.197 0m0 .911c1.047 0 2.096.436 2.922 1.311l1.497 1.592a.53.53 0 0 0 .388.165.53.53 0 0 0 .388-.165l1.489-1.585c1.651-1.751 4.185-1.75 5.836 0s1.651 4.635 0 6.385L10 16.798 2.283 8.606a4.74 4.74 0 0 1 0-6.385C3.108 1.347 4.15.911 5.196.911z"></path>
              </svg>
              <span>FAVORİLERİM</span>
-           </button>
+           </RouterLink>
         </div>
 
         <div class="free-shipping-banner">
@@ -154,79 +162,21 @@ const chooseSize = (size) => {
 
         <div class="shopping-list">
           <div class="shopping-list-container">
-           <div v-for="item in items" :key="lineKey(item)" class="shopping__card--item">
-            <div class="shopping-product-card">
-                <div class="item-select">
-                    <div class="custom-checkbox custom-checkbox--black">
-                        <input :id="'chk-' + lineKey(item)" type="checkbox" checked>
-                        <label :for="'chk-' + lineKey(item)"></label>
-                    </div>
-                </div>
-                <div class="shopping-product-card__image">
-                    <img :src="getImage(item)"
-                         :alt="item.title"
-                         @click="goToDetail(item)"
-                         class="clickable-media"
-                         />
-                  <div class="delivery-estimate">
-                    TAHMİNİ TESLİMAT: 13 ARALIK - 18 ARALIK
-                  </div>
-                </div>  
-                <div class="shopping-product-card__info">
-                  <div class="shopping-product-card__info--title-block">
-                      <h3 class="product-title interactive-text" @click="goToDetail(item)">
-                        {{ item.title }}
-                      </h3>  
-                    <div class="item-price-block">
-                       <span class="shopping-product-card__info--price-new">{{ item.price }} TL</span>
-                    </div>
-                  </div>
-                  <div
-                    v-if="isSizedCategory(item.mainCategory)"
-                    class="shopping-product-card__info--size"
-                  >
-                    <span>BEDEN: {{ (item.size || '-').toString().toUpperCase() }}</span>
-                    <button class="edit-btn" type="button" @click="openSizeEdit(item)">
-                      <svg viewBox="0 0 19 17.723" width="13" height="13">
-                        <path
-                          fill="currentColor"
-                          d="M13.357 0a2.37 2.37 0 0 0-1.68.693l-9.586 9.584-1.479 5.545 5.545-1.479 9.586-9.586a2.38 2.38 0 0 0 0-3.357l-.707-.707A2.37 2.37 0 0 0 13.357 0m0 .744a1.62 1.62 0 0 1 1.148.479l.707.707a1.62 1.62 0 0 1 0 2.299l-.891.891-3.006-3.004.891-.893a1.62 1.62 0 0 1 1.15-.479zm-2.572 1.9 3.006 3.006-8.021 8.021-4.098 1.094 1.094-4.1zM0 16.723v1h19v-1H.5z"
-                        ></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <div class="shopping-product-card__info--controls">
-                    <div class="qty-selector">
-                      <div class="control-left-wrapper">
-                         <button v-if="item.qty > 1" class="minus-icon" @click="decreaseQty(item)">
-                           <svg viewBox="0 0 12 12" width="10" height="10">
-                              <path fill="currentColor" d="M0 5.5h12v1H0z"></path>
-                           </svg>
-                         </button>
-                         <button v-else class="delete-icon" @click="openDeleteModal(item)">
-                           <svg viewBox="0 0 22 24" width="12" height="12">
-                             <path fill="currentColor" d="m19.245 8.816-1.059 11.862c-.076.7-.317 1.262-.728 1.645s-.975.576-1.674.59a248 248 0 0 1-9.652-.006c-.667-.015-1.213-.213-1.606-.59-.4-.383-.637-.941-.713-1.629-.391-3.547-1.057-11.872-1.057-11.872a.524.524 0 0 0-1.045.082l1.06 11.903c.106.963.468 1.731 1.029 2.267.569.544 1.346.86 2.31.88 3.229.069 6.463.065 9.693.006.995-.018 1.791-.33 2.372-.87s.945-1.311 1.053-2.291c.39-3.526 1.062-11.894 1.062-11.894a.523.523 0 0 0-1.045-.083M0 4.851c0-.288.235-.522.524-.522h20.952c.289 0 .524.234.524.522s-.235.522-.524.522H.524A.523.523 0 0 1 0 4.851"></path><path fill="currentColor" d="M6.349 1.565A2.11 2.11 0 0 1 8.384 0h5.231c.954 0 1.788.643 2.034 1.565l.007.032.301 1.509a1.515 1.515 0 0 0 1.481 1.223c.289 0 .524.234.524.522s-.235.522-.524.522a2.56 2.56 0 0 1-2.509-2.063l-.296-1.491a1.06 1.06 0 0 0-1.018-.775H8.384a1.06 1.06 0 0 0-1.017.775L7.069 3.31A2.56 2.56 0 0 1 4.56 5.373c-.289 0-.524-.234-.524-.522s.235-.522.524-.522c.717 0 1.34-.509 1.482-1.222l.3-1.51z"></path>
-                           </svg>
-                         </button>
-                      </div>
-                      <span class="qty-label">ADET:</span>
-                      <strong class="qty-val">{{ item.qty || 1 }}</strong>
-                      <div class="qty-buttons">
-                        <button @click="increaseQty(item)">
-                             <svg viewBox="0 0 12 12" width="10" height="10">
-                                <path fill="currentColor" d="M5.5 0v5.5H0v1h5.5V12h1V6.5H12v-1H6.5V0z"></path>
-                             </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div> 
-             </div> 
-           </div>
-         </div>
+            <CartItemCard
+  v-for="item in items"
+  :key="lineKey(item)"
+  :item="item"
+  :image-src="getImage(item)"
+  :is-sized="isSizedCategory(item.mainCategory)"
+  @go-detail="goToDetail"
+  @increase="increaseQty"
+  @decrease="decreaseQty"
+  @remove="removeLine"
+  @edit-size="openSizeEdit"
+/>
        </div>
      </div>
-
+      </div>
       <div class="shopping-right">
         <div class="shopping__summary-final">
           <div class="shopping__summary-final--content">
@@ -292,57 +242,23 @@ const chooseSize = (size) => {
       </div>
     </div>
 
-    <transition name="size-fade">
-      <div v-if="sizeOpen" class="size-overlay" @click.self="closeSize">
-        <div class="size-panel">
-          <div class="size-head">
-            <span class="size-title">BEDEN</span>
-            <button class="size-close" type="button" @click="closeSize">✕</button>
-          </div>
+    <SizePickerModal
+  :open="sizeOpen"
+  :options="sizeOptions"
+  title="BEDEN"
+  @close="closeSize"
+  @choose="chooseSize"
+/>
 
-          <div class="size-grid">
-            <button
-              v-for="s in sizeOptions"
-              :key="s"
-              type="button"
-              class="size-btn"
-              @click="chooseSize(s)"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div id="productDeleteModal" class="modal-container">
-        <div class="modal__header">
-          <span class="modal__title">ÜRÜN SİL</span>
-          <button class="modal__close" @click="closeModal">
-            <svg viewBox="0 0 16 16" width="16" height="16">
-               <path fill="currentColor" d="M14.53 1.47a.75.75 0 0 0-1.06 0L8 6.94 2.53 1.47a.75.75 0 0 0-1.06 1.06L6.94 8l-5.47 5.47a.75.75 0 1 0 1.06 1.06L8 9.06l5.47 5.47a.75.75 0 0 0 1.06-1.06L9.06 8l5.47-5.47a.75.75 0 0 0 0-1.06z"></path>
-            </svg>
-          </button>
-        </div>
-        <div class="modal__inner">
-          <span class="modal__text">BU İŞLEMLE ÜRÜN SEPETİNİZDEN KALDIRILACAKTIR.<br>ONAYLIYOR MUSUNUZ?</span>
-          <div class="modal__footer">
-            <button class="btn-modal btn-black" @click="confirmDelete(true)">
-              SİL VE FAVORİLERE EKLE
-            </button>
-            <button class="btn-modal btn-white" @click="confirmDelete(false)">
-              SİL
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
+<DeleteConfirmModal
+  :open="showModal"
+  @close="closeModal"
+  @confirm="confirmDelete"
+/>
   </section>
 </template>
 
-<style scoped>
+<style>
 
 @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700&family=Mulish:wght@400;500;600;700;800&display=swap');
 
@@ -814,72 +730,6 @@ const chooseSize = (size) => {
   font-size: 11.5px; 
   font-weight: 400;
   vertical-align: middle;
-}
-
-/* --- CSS النافذة المنبثقة (Modal) المحسن --- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-container {
-  background: #fff;
-  width: 450px; 
-  max-width: 95%;
-  padding: 20px 20px 30px 20px;
-  position: relative;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.modal__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
-}
-
-.modal__title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #22242a;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.modal__close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: #000;
-}
-
-.modal__inner {
-  padding: 0 1px;
-}
-
-.modal__text {
-  font-size: 14px;
-  font-weight: 400; 
-  color: #22242a;
-  margin-top: 20px;
-  margin-bottom: 25px;
-  display: block;
-  line-height: 1.5;
-}
-
-.modal__footer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 /* التنسيق الأساسي لأزرار المودال */
